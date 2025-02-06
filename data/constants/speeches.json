@@ -1,0 +1,82 @@
+[
+  {
+    "name": "benvenuto_evocatore",
+    "text": "Benvenuto Evocatore! La partita sta per iniziare. Controlla le tue rune, compra i primi oggetti e posizionati bene sulla mappa. La visione iniziale è essenziale per evitare invasioni nemiche."
+  },
+  {
+    "name": "obiettivi_mappa",
+    "text": "Ricorda di tenere sempre d'occhio gli obiettivi sulla mappa. Il Drago e il Barone Nashor possono cambiare l'andamento della partita. Cerca di contestarli quando hai la possibilità di farlo."
+  },
+  {
+    "name": "farm_minion",
+    "text": "Hai pochi minion rispetto al tuo avversario. Cerca di migliorare il tuo farming, colpisci i minion al momento giusto per ottenere il massimo oro possibile. Il vantaggio in farm si trasforma in oggetti più forti!"
+  },
+  {
+    "name": "call_drago",
+    "text": "Ti consiglio di fare il Drago. Il jungler avversario è fuori gioco e la tua squadra ha il controllo della corsia inferiore. Approfittane per ottenere un potenziamento che può cambiare la partita."
+  },
+  {
+    "name": "vantaggio_laning",
+    "text": "Sei in vantaggio rispetto al tuo avversario in corsia. Continua a giocare in modo aggressivo ma fai attenzione alle imboscate del jungler nemico. Non rischiare troppo senza visione!"
+  },
+  {
+    "name": "visione_mappa",
+    "text": "La visione è essenziale per vincere. Compra sempre qualche ward e posizionale nei punti chiave della mappa. Sapere dove si trova il nemico ti permette di evitare imboscate e prendere decisioni migliori."
+  },
+  {
+    "name": "chiamata_baron",
+    "text": "Il Barone Nashor è disponibile e la tua squadra ha il vantaggio numerico. Valuta se ingaggiarlo per ottenere un potenziamento che aiuterà a spingere le corsie e chiudere la partita."
+  },
+  {
+    "name": "back_sicuro",
+    "text": "Hai poca vita e molti ori accumulati. Ti consiglio di tornare in base per acquistare oggetti e tornare più forte in corsia. Non rischiare di perdere tutto con una morte evitabile."
+  },
+  {
+    "name": "attenzione_jungler",
+    "text": "Il jungler nemico è scomparso dalla mappa. Potrebbe essere vicino alla tua corsia per un'imboscata. Posiziona una ward e gioca in modo più difensivo fino a quando non hai informazioni più chiare."
+  },
+  {
+    "name": "split_push",
+    "text": "La tua squadra sta raggruppandosi a metà mappa. Potresti fare split push su una corsia laterale per mettere pressione sulle torri nemiche, ma assicurati di avere una via di fuga sicura."
+  },
+  {
+    "name": "priorita_obiettivi",
+    "text": "In questa fase della partita, gli obiettivi sono più importanti delle uccisioni. Cerca di coordinarti con la tua squadra per prendere torri e draghi invece di inseguire nemici senza motivo."
+  },
+  {
+    "name": "sostenere_il_support",
+    "text": "Se sei l'ADC, ricordati di stare vicino al tuo support. Se si sposta per piazzare visione, accompagnalo per evitare imboscate. La sicurezza della corsia inferiore è fondamentale per il mid-game."
+  },
+  {
+    "name": "ingaggio_sicuro",
+    "text": "Se vuoi ingaggiare un combattimento, assicurati che la tua squadra sia pronta a seguirti. Un'azione affrettata senza supporto può costare caro e ribaltare la partita a favore del nemico."
+  },
+  {
+    "name": "chiamata_ritirata",
+    "text": "State combattendo in inferiorità numerica. È meglio ritirarsi e non rischiare una sconfitta che potrebbe dare al nemico il controllo della mappa. Giocate in modo intelligente e aspettate il momento giusto."
+  },
+  {
+    "name": "oggetti_adatti",
+    "text": "Controlla la composizione della squadra avversaria e acquista gli oggetti giusti. Se il nemico ha molti campioni con controllo, potresti considerare una Fascia d'argento per liberarti dagli effetti di follia."
+  },
+  {
+    "name": "protezione_torri",
+    "text": "Non lasciare che il nemico prenda torri gratis. Se la tua squadra è in svantaggio, concentratevi sulla difesa e aspettate un errore avversario per ribaltare la situazione."
+  },
+  {
+    "name": "focus_sul_carry",
+    "text": "In combattimento a squadre, cerca di concentrarti sul carry nemico. Se riesci a eliminarlo rapidamente, la tua squadra avrà un vantaggio enorme e potrà vincere lo scontro."
+  },
+  {
+    "name": "evitare_overextend",
+    "text": "Non avanzare troppo in profondità senza visione. Se sei troppo lontano dai tuoi alleati, rischi di essere eliminato senza possibilità di aiuto. Gioca in modo sicuro e mantieni la posizione strategica."
+  },
+  {
+    "name": "prendi_il_buff",
+    "text": "Sei l'ADC e il buff rosso è disponibile. Prendilo per aumentare il tuo danno e la capacità di inseguimento nei combattimenti. Usa ogni vantaggio per migliorare le tue possibilità di vittoria."
+  },
+  {
+    "name": "fine_partita",
+    "text": "La partita sta per concludersi. Se avete il vantaggio, cercate di chiudere senza rischi inutili. Se siete in svantaggio, difendete e cercate un'occasione per ribaltare la situazione con un combattimento ben eseguito."
+  }
+]

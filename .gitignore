@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+coqui/
+.env/
+
+# togli tutti i pychache anche quelli annidati
+**/__pycache__/
+
+# IDE settings
+.vscode/
+.idea/
+*.sublime-workspace
+
+# Logs & debug
+logs/
+*.log
+
+# Data & models
+data/*.json
+models/
+
+# LM Studio & LLM-generated files
+lm_studio/
+*.bin
+
+# Audio files
+data/speeches/
+*.wav
+
+# Miscellaneous
+.DS_Store
+Thumbs.db
+
