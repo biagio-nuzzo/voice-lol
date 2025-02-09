@@ -35,7 +35,7 @@ ACTION_CHAIN = {
     },
     "steps": [
         {
-            "function": list_available_actions,
+            "function": "list_available_actions",
             "input_key": None,
             "output_key": "final_response",
         }

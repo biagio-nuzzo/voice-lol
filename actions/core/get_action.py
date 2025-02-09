@@ -57,7 +57,7 @@ def llm_get_action(user_input):
         data = response.json()["choices"][0]["text"]
         match = re.search(r'\{\s*"action"\s*:\s*"(.*?)"\s*\}', data)
         if match:
-            return {"action": match.group(1)}
+            return match.group(1)
 
     print(f"Errore nella richiesta: {response.status_code}")
     return {"action": None}
@@ -71,7 +71,7 @@ ACTION_CHAIN = {
     },
     "steps": [
         {
-            "function": llm_get_action,
+            "function": "llm_get_action",
             "input_key": "user_input",
             "output_key": "final_response",
         },

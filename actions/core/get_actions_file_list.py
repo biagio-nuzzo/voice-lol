@@ -35,7 +35,7 @@ ACTION_CHAIN = {
     },
     "steps": [
         {
-            "function": list_files_in_actions,
+            "function": "list_files_in_actions",
             "input_key": None,
             "output_key": "final_response",
         }

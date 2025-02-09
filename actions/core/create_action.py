@@ -192,7 +192,7 @@ ACTION_CHAIN = {
     },
     "steps": [
         {
-            "function": llm_create_action,
+            "function": "llm_create_action",
             "input_key": "user_input",
             "output_key": "final_response",
         },

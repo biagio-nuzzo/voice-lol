@@ -40,7 +40,7 @@ ACTION_CHAIN = {
     },
     "steps": [
         {
-            "function": llm_generic_question,
+            "function": "llm_generic_question",
             "input_key": "user_input",
             "output_key": "final_response",
         },

@@ -100,12 +100,12 @@ ACTION_CHAIN = {
     },
     "steps": [
         {
-            "function": llm_get_item,
+            "function": "llm_get_item",
             "input_key": "user_input",
             "output_key": "item_key",
         },
         {
-            "function": generate_description,
+            "function": "generate_description",
             "input_key": "item_key",
             "output_key": "final_response",
         },
