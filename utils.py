@@ -11,7 +11,7 @@ import pyaudio
 import simpleaudio as sa
 
 # Settings
-from settings import TTS_OPEN_REC, TTS_CLOSE_REC
+from settings import TTS_OPEN_REC, TTS_CLOSE_REC, TTS_UNDO_REC
 
 
 # Funzione per catturare il testo tramite Vosk
@@ -30,7 +30,8 @@ def capture_speech():
     print(
         f"""
         Per evocare il tuo assistente vocale, pronuncia '{TTS_OPEN_REC}'.
-        Parla e pronuncia chiaramente le tue richieste. Quando hai finito, pronuncia '{TTS_CLOSE_REC}'.\n
+        Parla e pronuncia chiaramente le tue richieste. Quando hai finito, pronuncia '{TTS_CLOSE_REC}'.
+        Per annullare la registrazione, pronuncia '{TTS_UNDO_REC}'.\n
         """
     )
 
@@ -50,6 +51,10 @@ def capture_speech():
             elif text == TTS_CLOSE_REC.lower():
                 print("\n🛑 Registrazione terminata!\n")
                 break
+            elif text == TTS_UNDO_REC.lower():
+                print("\n❌ Registrazione annullata!\n")
+                captured_text = []
+                return None
             elif is_recording and text:
                 captured_text.append(text)
 
@@ -85,7 +90,7 @@ def clean_text_for_tts(text):
         "&": " e ",
         "@": " chiocciola ",
         "#": " hashtag ",
-        "*": " asterisco ",
+        "*": "  ",
         "~": " tilde ",
         "^": " elevato alla ",
     }

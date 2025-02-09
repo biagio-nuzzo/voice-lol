@@ -11,6 +11,7 @@ MODEL_DIR = os.path.expanduser("~/.local/share/tts/")
 # TTS COMMAND
 TTS_OPEN_REC = "computer attivati"
 TTS_CLOSE_REC = "computer elabora"
+TTS_UNDO_REC = "computer stop"
 
 # FILE STORAGE CONFIG
 OVERWRITE = True

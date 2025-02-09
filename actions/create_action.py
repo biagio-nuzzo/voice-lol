@@ -30,8 +30,8 @@ def llm_generate_action_code(action_name, action_description):
 
     def generate_prompt(user_input):
         return f\"\"\" 
-        You are an AI assistant. Your task is ACTION_DESCRIPTION.
-        Here is the user's input: "USER_INPUT".
+        Sei un assistente AI. Il tuo compito è: ACTION_DESCRIPTION.
+        Questo è l'input dell'utente: "USER_INPUT".
         \"\"\" 
 
     def llm_action_name(user_input):
@@ -63,6 +63,8 @@ def llm_generate_action_code(action_name, action_description):
 
     L'azione richiesta dall'utente potrebbe avere più step o richiedere una logica più complessa.
     Restituiscimi SOLO il codice Python per la nuova action, senza alcun testo aggiuntivo.
+    I prompt devono essere sempre scritti in italiano.
+    I nomi delle action devono sempre essere in inglese.
     """
 
     payload = {

@@ -18,7 +18,7 @@ from main import execute_action
 
 # Eseguiamo la funzione e stampiamo il risultato
 test_new_action = execute_action(
-    "GET_ACTION", "dammi la lista delle azioni disponibili."
+    "CREATE_ACTION", "crea una action che mi permetta che prenda in input un testo molto lungo e che ne faccia un riassunto compreso fra trecento e quattrocento caratteri"
 )
 
 print("RISULTATO ESECUZIONE ACTION:")
