@@ -14,6 +14,23 @@ import simpleaudio as sa
 from settings import TTS_OPEN_REC, TTS_CLOSE_REC, TTS_UNDO_REC
 
 
+def execute_action(action_key, user_input):
+    """
+    Esegue tutti gli step definiti per una specifica azione.
+    """
+    action_steps = get_action_registry().get(action_key, {}).get("steps", [])
+    context = {"user_input": user_input}
+
+    for step in action_steps:
+        function = step["function"]
+        input_value = context.get(step["input_key"])
+        if input_value is not None:
+            output_value = function(input_value)
+            context[step["output_key"]] = output_value
+
+    return context.get("final_response", None)
+
+
 # Funzione per catturare il testo tramite Vosk
 def capture_speech():
     model = vosk.Model("models/vosk-model-it")  # Update the path to the model if needed

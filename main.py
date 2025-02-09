@@ -2,28 +2,17 @@
 from settings import TTS_MODEL
 
 # Global Utils
-from utils import capture_speech, play_audio, clean_text_for_tts, get_action_registry
+from utils import (
+    capture_speech,
+    play_audio,
+    clean_text_for_tts,
+    get_action_registry,
+    execute_action,
+)
 
 # TTS Modules
 from tts_modules.tts_tts import generate_audio_tts
 from tts_modules.bark_tts import generate_audio_bark
-
-
-def execute_action(action_key, user_input):
-    """
-    Esegue tutti gli step definiti per una specifica azione.
-    """
-    action_steps = get_action_registry().get(action_key, {}).get("steps", [])
-    context = {"user_input": user_input}
-
-    for step in action_steps:
-        function = step["function"]
-        input_value = context.get(step["input_key"])
-        if input_value is not None:
-            output_value = function(input_value)
-            context[step["output_key"]] = output_value
-
-    return context.get("final_response", None)
 
 
 def main():
