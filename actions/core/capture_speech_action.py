@@ -8,77 +8,131 @@ import select
 def capture_speech_action():
     """
     Avvia la registrazione audio e la converte in testo.
-    L'utente può parlare e premere INVIO per terminare la registrazione.
+    L'utente può parlare e premere INVIO per terminare la registrazione solo se almeno un testo è stato riconosciuto.
     """
-    model = vosk.Model("models/vosk-model-it")
-    recognizer = vosk.KaldiRecognizer(model, 16000)
-    mic = pyaudio.PyAudio()
+    try:
+        # 🔹 Carica il modello Vosk
+        model = vosk.Model("models/vosk-model-it")
+        recognizer = vosk.KaldiRecognizer(model, 16000)
 
-    # Apertura dello stream audio
-    stream = mic.open(
-        format=pyaudio.paInt16,
-        channels=1,
-        rate=16000,
-        input=True,
-        frames_per_buffer=2048,  # 🔹 Buffer ridotto per una migliore acquisizione
-    )
-    stream.start_stream()
+        # 🔹 Inizializza PyAudio
+        mic = pyaudio.PyAudio()
 
-    print("\n🎤 Registrazione avviata! Parla... (Premi INVIO per terminare)\n")
-
-    captured_text = []
-    stop_capture = False
-
-    # Loop di registrazione
-    while not stop_capture:
-        try:
-            data = stream.read(2048, exception_on_overflow=False)
-
-            if len(data) == 0:
-                print("⚠️ Nessun audio ricevuto. Assicurati che il microfono funzioni.")
+        # 🔹 Trova il dispositivo di input corretto
+        input_device_index = None
+        for i in range(mic.get_device_count()):
+            device_info = mic.get_device_info_by_index(i)
+            if device_info["maxInputChannels"] > 0:
+                input_device_index = i
                 break
 
-            # 🔹 Controlliamo il riconoscimento parziale per un feedback in tempo reale
-            if recognizer.AcceptWaveform(data):
-                result = json.loads(recognizer.Result())
-                text = result["text"].strip().lower()
+        if input_device_index is None:
+            print("⚠️ Nessun microfono disponibile! Controlla le impostazioni audio.")
+            return None
 
-                if text:
-                    print(f"📝 Riconosciuto: {text}")
-                    captured_text.append(text)
-            else:
-                partial_result = json.loads(recognizer.PartialResult())
-                sys.stdout.write(f"\r🕵️ Parziale: {partial_result.get('partial', '')}")
-                sys.stdout.flush()
+        print(
+            f"🎤 Usando il microfono: {mic.get_device_info_by_index(input_device_index)['name']}"
+        )
 
-            # Controlliamo se l'utente ha premuto INVIO per fermare la registrazione
-            if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
-                input("\nPremi INVIO per terminare la registrazione...")
-                stop_capture = True
+        # 🔹 Apertura dello stream audio
+        stream = mic.open(
+            format=pyaudio.paInt16,
+            channels=1,
+            rate=16000,
+            input=True,
+            frames_per_buffer=1024,
+            input_device_index=input_device_index,
+        )
+        stream.start_stream()
 
-        except Exception as e:
-            print(f"⚠️ Errore durante la registrazione: {e}")
-            break
+        print(
+            "\n🎤 Registrazione avviata! Parla... (Premi INVIO per terminare, solo dopo il primo riconoscimento!)\n"
+        )
 
-    print("\n🛑 Registrazione terminata!\n")
+        captured_text = []
+        recognized_something = (
+            False  # 🔹 Indica se almeno un testo è stato riconosciuto
+        )
 
-    # Stop del microfono
-    stream.stop_stream()
-    stream.close()
-    mic.terminate()
+        # 🔹 Svuota il buffer di input per evitare lag
+        stream.read(stream.get_read_available(), exception_on_overflow=False)
 
-    # 🔹 Se nessun testo è stato riconosciuto, restituire un messaggio di errore
-    final_text = (
-        " ".join(captured_text)
-        if captured_text
-        else "Impossibile riconoscere l'audio. Riprova."
-    )
+        # 🔹 Loop di registrazione
+        while True:
+            try:
+                data = stream.read(1024, exception_on_overflow=False)
 
-    print("\n🔊 Trascrizione audio completata!\n")
-    print("Testo riconosciuto:")
-    print(final_text)
+                if not data or len(data) == 0:
+                    print(
+                        "⚠️ Nessun audio ricevuto. Assicurati che il microfono funzioni."
+                    )
+                    continue
 
-    return final_text
+                # 🔹 Controlliamo il riconoscimento parziale per feedback in tempo reale
+                if recognizer.AcceptWaveform(data):
+                    result = json.loads(recognizer.Result())
+                    text = result["text"].strip().lower()
+
+                    if text:
+                        print(f"📝 Riconosciuto: {text}")
+                        captured_text.append(text)
+                        recognized_something = (
+                            True  # 🔹 Ora possiamo permettere l'uscita
+                        )
+                else:
+                    partial_result = json.loads(recognizer.PartialResult())
+                    sys.stdout.write(
+                        f"\r🕵️ Parziale: {partial_result.get('partial', '')}"
+                    )
+                    sys.stdout.flush()
+
+                # 🔹 Controlliamo se l'utente ha premuto INVIO per fermare la registrazione
+                if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
+                    input("\nPremi INVIO per terminare la registrazione...")
+
+                    if not recognized_something:
+                        print(
+                            "⚠️ Devi parlare prima di poter terminare la registrazione! Continua a parlare."
+                        )
+                        continue  # 🔹 Impedisce la chiusura finché non è stato riconosciuto almeno un testo
+
+                    break  # 🔹 Se c'è testo riconosciuto, usciamo dal loop
+
+            except Exception as e:
+                print(f"⚠️ Errore durante la registrazione: {e}")
+                break
+
+        print("\n🛑 Registrazione terminata!\n")
+
+        # 🔹 Elaborazione dell'ultimo frammento di audio
+        remaining_data = stream.read(1024, exception_on_overflow=False)
+        if remaining_data and recognizer.AcceptWaveform(remaining_data):
+            final_result = json.loads(recognizer.Result())
+            final_text = final_result["text"].strip().lower()
+            if final_text:
+                print(f"📝 Ultima parte riconosciuta: {final_text}")
+                captured_text.append(final_text)
+
+        # 🔹 Stop del microfono
+        stream.stop_stream()
+        stream.close()
+        mic.terminate()
+
+        print("\n🔊 Trascrizione audio completata!\n")
+        print("Testo riconosciuto:", " ".join(captured_text))
+
+        # 🔹 Se nessun testo è stato riconosciuto, restituiamo un messaggio di errore
+        final_text = (
+            " ".join(captured_text)
+            if captured_text
+            else "Impossibile riconoscere l'audio. Riprova."
+        )
+
+        return final_text
+
+    except Exception as e:
+        print(f"⚠️ Errore iniziale: {e}")
+        return None
 
 
 # Definizione dell'Action
