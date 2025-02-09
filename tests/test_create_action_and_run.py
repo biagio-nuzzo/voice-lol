@@ -1,5 +1,5 @@
 from main import execute_action
-from actions.create_action import llm_create_action
+from actions.core.create_action import llm_create_action
 
 # Definiamo l'input utente
 user_input = "Creami una action che racconti barzellette divertenti."

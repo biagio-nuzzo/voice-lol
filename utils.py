@@ -14,6 +14,7 @@ import simpleaudio as sa
 from settings import TTS_OPEN_REC, TTS_CLOSE_REC, TTS_UNDO_REC
 
 
+# Funzione per eseguire un'azione
 def execute_action(action_key, user_input):
     """
     Esegue tutti gli step definiti per una specifica azione.
@@ -24,9 +25,13 @@ def execute_action(action_key, user_input):
     for step in action_steps:
         function = step["function"]
         input_value = context.get(step["input_key"])
-        if input_value is not None:
+
+        if input_value is None:
+            output_value = function()
+        else:
             output_value = function(input_value)
-            context[step["output_key"]] = output_value
+
+        context[step["output_key"]] = output_value
 
     return context.get("final_response", None)
 
@@ -86,6 +91,7 @@ def play_audio(audio_file):
     play_obj.wait_done()
 
 
+# Funzione per pulire il testo prima di convertirlo in audio
 def clean_text_for_tts(text):
     """
     Pulisce il testo prima di convertirlo in audio.
@@ -127,27 +133,53 @@ def clean_text_for_tts(text):
     return text
 
 
+import os
+import importlib.util
+
+
 def get_action_registry():
     """
-    Scansiona la cartella delle actions e restituisce il dizionario ACTIONS.
+    Scansiona la cartella actions e la sotto-cartella core,
+    restituendo un dizionario con tutte le ACTION_CHAIN disponibili.
     """
-    actions_dir = os.path.join(os.path.dirname(__file__), "actions")
+    base_actions_dir = os.path.join(os.path.dirname(__file__), "actions")
+    core_actions_dir = os.path.join(base_actions_dir, "core")
+
     actions_registry = {}
 
-    for filename in os.listdir(actions_dir):
-        if filename.endswith(".py") and filename != "__init__.py":
-            module_name = f"actions.{filename[:-3]}"
-            module_path = os.path.join(actions_dir, filename)
+    def scan_directory(directory, namespace):
+        """Scansiona una directory per cercare file Python contenenti ACTION_CHAIN"""
+        if not os.path.exists(directory):
+            print(
+                f"⚠️ Attenzione: La cartella '{directory}' non esiste. Viene ignorata."
+            )
+            return  # Se la cartella non esiste, interrompi la scansione
 
-            spec = importlib.util.spec_from_file_location(module_name, module_path)
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
+        for filename in os.listdir(directory):
+            if filename.endswith(".py") and filename != "__init__.py":
+                module_name = f"{namespace}.{filename[:-3]}"
+                module_path = os.path.join(directory, filename)
 
-            # Controlla se il modulo ha ACTION_CHAIN
-            if hasattr(module, "ACTION_CHAIN"):
-                action_chain = getattr(module, "ACTION_CHAIN")
-                if "metadata" in action_chain and "name" in action_chain["metadata"]:
-                    action_name = action_chain["metadata"]["name"]
-                    actions_registry[action_name] = action_chain
+                if not os.path.exists(module_path):
+                    print(f"⚠️ File non trovato: {module_path}")
+                    continue  # Se il file non esiste, passa oltre
+
+                spec = importlib.util.spec_from_file_location(module_name, module_path)
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+
+                # Controlla se il modulo ha ACTION_CHAIN
+                if hasattr(module, "ACTION_CHAIN"):
+                    action_chain = getattr(module, "ACTION_CHAIN")
+                    if (
+                        "metadata" in action_chain
+                        and "name" in action_chain["metadata"]
+                    ):
+                        action_name = action_chain["metadata"]["name"]
+                        actions_registry[action_name] = action_chain
+
+    # Scansiona sia la cartella actions che core
+    scan_directory(base_actions_dir, "actions")
+    scan_directory(core_actions_dir, "actions.core")
 
     return actions_registry

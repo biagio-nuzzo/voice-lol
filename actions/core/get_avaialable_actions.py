@@ -9,8 +9,8 @@ def generate_action_list_text():
 
     actions_list = "\n".join(
         [
-            f'{data["metadata"]["verbose_name"]}: {data["metadata"]["description"]}'
-            for data in actions.values()
+            f"{action_name}: {action['metadata']['description']}"
+            for action_name, action in actions.items()
         ]
     )
 
@@ -20,7 +20,7 @@ def generate_action_list_text():
     """
 
 
-def list_available_actions(user_input):
+def list_available_actions():
     """
     Restituisce il testo statico contenente la lista delle azioni disponibili.
     """
@@ -36,7 +36,7 @@ ACTION_CHAIN = {
     "steps": [
         {
             "function": list_available_actions,
-            "input_key": "user_input",
+            "input_key": None,
             "output_key": "final_response",
         }
     ],

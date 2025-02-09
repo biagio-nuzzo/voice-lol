@@ -1,25 +1,12 @@
 from main import execute_action
 
-# from actions.create_action import llm_create_action
 
-# # Definiamo l'input utente
-# user_input = "Creami una action che racconti barzellette divertenti."
+# test_new_action = execute_action(
+#     "CREATE_ACTION",
+#     "Crea una action che faccia una chiamata API a https://jsonplaceholder.typicode.com/posts/1 e restituisca il titolo del post.",
+# )
 
-# # Eseguiamo la funzione e stampiamo il risultato
-# result = llm_create_action(user_input)
-# print("RISULTATO CREAZIONE ACTION:")
-# print(result)
-
-# Eseguiamo la funzione e stampiamo il risultato
-# result = execute_action("GET_ACTION", "Dammi la lista delle azioni disponibili.")
-
-# print("RISULTATO IDENTIFICAZIONE ACTION:")
-# print(result)
-
-# Eseguiamo la funzione e stampiamo il risultato
-test_new_action = execute_action(
-    "CREATE_ACTION", "crea una action che mi permetta che prenda in input un testo molto lungo e che ne faccia un riassunto compreso fra trecento e quattrocento caratteri"
-)
+test_new_action = execute_action("LIST_ACTIONS_FILE", None)
 
 print("RISULTATO ESECUZIONE ACTION:")
 print(test_new_action)
