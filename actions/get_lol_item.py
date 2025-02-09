@@ -9,7 +9,7 @@ import requests
 from data.constants.items import LOL_ITEMS
 
 # Settings
-from settings import API_URL
+from settings import API_URL, GEMMA
 
 
 # Funzione per interrogare l'LLM
@@ -43,9 +43,9 @@ def llm_get_item(user_input):
             """
 
     payload = {
-        "model": "gemma-2-2b-instruct",
+        "model": GEMMA,
         "prompt": pre_prompt,
-        "max_tokens": 1000,
+        "max_tokens": 5000,
         "temperature": 0.7,
     }
 
@@ -79,9 +79,9 @@ def generate_description(item_key):
             """
 
     payload = {
-        "model": "gemma-2-2b-instruct",
+        "model": GEMMA,
         "prompt": description_prompt,
-        "max_tokens": 1000,
+        "max_tokens": 5000,
         "temperature": 0.7,
     }
 
@@ -90,3 +90,24 @@ def generate_description(item_key):
         return response.json()["choices"][0]["text"].strip()
 
     return "Errore nella generazione della descrizione."
+
+
+ACTION_CHAIN = {
+    "metadata": {
+        "description": "Restituisce una descrizione dettagliata di un oggetto di League of Legends.",
+        "name": "GET_LOL_ITEMS",
+        "verbose_name": "Descrivi Oggetto League of Legends",
+    },
+    "steps": [
+        {
+            "function": llm_get_item,
+            "input_key": "user_input",
+            "output_key": "item_key",
+        },
+        {
+            "function": generate_description,
+            "input_key": "item_key",
+            "output_key": "final_response",
+        },
+    ],
+}

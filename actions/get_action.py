@@ -3,20 +3,29 @@ import requests
 import re
 
 # Settings
-from settings import API_URL
+from settings import API_URL, GEMMA
 
-# Definizione delle azioni disponibili
-AVAILABLE_ACTIONS = ["GET_LOL_ITEMS", "GENERIC_QUESTION"]
+from utils import get_action_registry
 
 
-# Funzione per identificare l'azione richiesta dall'utente
-def llm_get_action(user_input):
+def generate_prompt(user_input):
+    """
+    Genera un prompt dinamico per classificare le richieste dell'utente basato sulle azioni registrate.
+    """
+    actions = get_action_registry()
+
+    actions_list = "\n".join(
+        [
+            f'- "{name}": {data["metadata"]["description"]}'
+            for name, data in actions.items()
+        ]
+    )
+
     prompt = f"""
         Sei un assistente AI che classifica le richieste degli utenti in base al contesto.
         Il tuo compito è identificare quale tra le seguenti azioni è richiesta dall'utente:
 
-        - "GET_LOL_ITEMS" → Se l'utente chiede informazioni su un oggetto di League of Legends.
-        - "GENERIC_QUESTION" → Se l'utente fa una domanda generica non correlata agli oggetti di LoL.
+        {actions_list}
 
         ⚠️ **Regole importanti:**
         1. **Rispondi solo con un JSON nel formato:**
@@ -29,10 +38,17 @@ def llm_get_action(user_input):
         **Input dell'utente:** "{user_input}"
         """
 
+    return prompt
+
+
+# Funzione per identificare l'azione richiesta dall'utente
+def llm_get_action(user_input):
+    prompt = generate_prompt(user_input)
+
     payload = {
-        "model": "gemma-2-2b-instruct",
+        "model": GEMMA,
         "prompt": prompt,
-        "max_tokens": 100,
+        "max_tokens": 5000,
         "temperature": 0.7,
     }
 
@@ -45,3 +61,19 @@ def llm_get_action(user_input):
 
     print(f"Errore nella richiesta: {response.status_code}")
     return {"action": None}
+
+
+ACTION_CHAIN = {
+    "metadata": {
+        "description": "Identifica l'azione richiesta dall'utente.",
+        "name": "GET_ACTION",
+        "verbose_name": "Identificazione Azione",
+    },
+    "steps": [
+        {
+            "function": llm_get_action,
+            "input_key": "user_input",
+            "output_key": "final_response",
+        },
+    ],
+}

@@ -1,9 +1,8 @@
 # Api
 import requests
-import re
 
 # Settings
-from settings import API_URL
+from settings import API_URL, GEMMA
 
 
 # Funzione per interrogare l'LLM su una domanda generica
@@ -19,9 +18,9 @@ La tua risposta verrà convertita in testo così come la fornirai, quindi assicu
 """
 
     payload = {
-        "model": "gemma-2-2b-instruct",
+        "model": GEMMA,
         "prompt": prompt,
-        "max_tokens": 800,
+        "max_tokens": 5000,
         "temperature": 0.7,
     }
 
@@ -31,3 +30,19 @@ La tua risposta verrà convertita in testo così come la fornirai, quindi assicu
 
     print(f"Errore nella richiesta: {response.status_code}")
     return None
+
+
+ACTION_CHAIN = {
+    "metadata": {
+        "description": "Risponde a una domanda generica.",
+        "name": "GENERIC_QUESTION",
+        "verbose_name": "Risposta Domanda Generica",
+    },
+    "steps": [
+        {
+            "function": llm_generic_question,
+            "input_key": "user_input",
+            "output_key": "final_response",
+        },
+    ],
+}

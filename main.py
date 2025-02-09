@@ -2,21 +2,18 @@
 from settings import TTS_MODEL
 
 # Global Utils
-from utils import capture_speech, play_audio, clean_text_for_tts
+from utils import capture_speech, play_audio, clean_text_for_tts, get_action_registry
 
 # TTS Modules
 from tts_modules.tts_tts import generate_audio_tts
 from tts_modules.bark_tts import generate_audio_bark
-
-# Actions
-from action_registry import ACTIONS
 
 
 def execute_action(action_key, user_input):
     """
     Esegue tutti gli step definiti per una specifica azione.
     """
-    action_steps = ACTIONS.get(action_key, {}).get("steps", [])
+    action_steps = get_action_registry().get(action_key, {}).get("steps", [])
     context = {"user_input": user_input}
 
     for step in action_steps:
@@ -39,7 +36,9 @@ def main():
             action_data = execute_action("GET_ACTION", text)
             action_key = action_data.get("action")
 
-            if action_key and action_key in ACTIONS:
+            actions = get_action_registry()
+
+            if action_key and action_key in actions:
                 print(f"🔹 Azione identificata: {action_key}")
                 response = execute_action(action_key, text)
 

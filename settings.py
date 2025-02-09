@@ -8,6 +8,15 @@ TTS_MODEL = "TTS"  # BARK | TTS
 TTS_MODEL_NAME = "tts_models/it/mai_female/glow-tts"
 MODEL_DIR = os.path.expanduser("~/.local/share/tts/")
 
+# TTS COMMAND
+TTS_OPEN_REC = "computer attivati"
+TTS_CLOSE_REC = "computer elabora"
+
 # FILE STORAGE CONFIG
 OVERWRITE = True
 SPEECHES_DIR = "data/speeches"
+
+# LLM MODELS
+GEMMA = "gemma-2-2b-instruct"
+QWEN = "qwen2.5-coder-7b-instruct"
+DEEP_SEEK_LLAMA = "deepseek-r1-distill-llama-8b"

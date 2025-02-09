@@ -2,11 +2,16 @@
 import json
 import re
 import unicodedata
+import os
+import importlib.util
 
 # Audio
 import vosk
 import pyaudio
 import simpleaudio as sa
+
+# Settings
+from settings import TTS_OPEN_REC, TTS_CLOSE_REC
 
 
 # Funzione per catturare il testo tramite Vosk
@@ -23,9 +28,9 @@ def capture_speech():
     )
     stream.start_stream()
     print(
-        """
-        Per evocare il tuo assistente vocale, pronuncia 'Ombra attivati'. 
-        Parla e pronuncia chiaramente le tue richieste. Quando hai finito, pronuncia 'Ombra agisci'.
+        f"""
+        Per evocare il tuo assistente vocale, pronuncia '{TTS_OPEN_REC}'.
+        Parla e pronuncia chiaramente le tue richieste. Quando hai finito, pronuncia '{TTS_CLOSE_REC}'.\n
         """
     )
 
@@ -38,11 +43,11 @@ def capture_speech():
             result = json.loads(recognizer.Result())
             text = result["text"].strip().lower()
 
-            if text == "computer attivati":
+            if text == TTS_OPEN_REC.lower():
                 print("\n🎤 Registrazione iniziata! Parla...\n")
                 is_recording = True
                 captured_text = []
-            elif text == "computer elabora":
+            elif text == TTS_CLOSE_REC.lower():
                 print("\n🛑 Registrazione terminata!\n")
                 break
             elif is_recording and text:
@@ -98,3 +103,29 @@ def clean_text_for_tts(text):
         text += " Questo è un messaggio di riempimento per garantire una lunghezza sufficiente."
 
     return text
+
+
+def get_action_registry():
+    """
+    Scansiona la cartella delle actions e restituisce il dizionario ACTIONS.
+    """
+    actions_dir = os.path.join(os.path.dirname(__file__), "actions")
+    actions_registry = {}
+
+    for filename in os.listdir(actions_dir):
+        if filename.endswith(".py") and filename != "__init__.py":
+            module_name = f"actions.{filename[:-3]}"
+            module_path = os.path.join(actions_dir, filename)
+
+            spec = importlib.util.spec_from_file_location(module_name, module_path)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+
+            # Controlla se il modulo ha ACTION_CHAIN
+            if hasattr(module, "ACTION_CHAIN"):
+                action_chain = getattr(module, "ACTION_CHAIN")
+                if "metadata" in action_chain and "name" in action_chain["metadata"]:
+                    action_name = action_chain["metadata"]["name"]
+                    actions_registry[action_name] = action_chain
+
+    return actions_registry

@@ -1,7 +1,8 @@
 # Actions
-from actions.get_lol_items import llm_get_item, generate_description
-from actions.generic_questions import llm_generic_question
+from actions.get_lol_item import llm_get_item, generate_description
+from actions.generic_question import llm_generic_question
 from actions.get_action import llm_get_action
+from actions.create_action import llm_create_action
 
 # Definizione delle azioni supportate
 ACTIONS = {
@@ -41,6 +42,18 @@ ACTIONS = {
         "steps": [
             {
                 "function": llm_generic_question,
+                "input_key": "user_input",
+                "output_key": "final_response",
+            },
+        ],
+    },
+    "CREATE_ACTION": {
+        "metadata": {
+            "description": "Crea una nuova action su richiesta dell'utente.",
+        },
+        "steps": [
+            {
+                "function": llm_create_action,
                 "input_key": "user_input",
                 "output_key": "final_response",
             },
