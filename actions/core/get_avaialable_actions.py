@@ -9,7 +9,7 @@ def generate_action_list_text():
 
     actions_list = "\n".join(
         [
-            f"{action_name}: {action['metadata']['description']}"
+            f"{action['metadata']['verbose_name']}: {action['metadata']['description']}"
             for action_name, action in actions.items()
         ]
     )

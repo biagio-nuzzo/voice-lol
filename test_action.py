@@ -6,7 +6,7 @@ from main import execute_action
 #     "Crea una action che faccia una chiamata API a https://jsonplaceholder.typicode.com/posts/1 e restituisca il titolo del post.",
 # )
 
-test_new_action = execute_action("LIST_ACTIONS_FILE", None)
+test_new_action = execute_action("LIST_AVAILABLE_ACTIONS", None)
 
 print("RISULTATO ESECUZIONE ACTION:")
 print(test_new_action)
