@@ -40,9 +40,19 @@ ACTION_CHAIN = {
     },
     "steps": [
         {
+            "function": "get_keyboard_input",
+            "input_key": None,
+            "output_key": "user_input",
+        },
+        {
             "function": "llm_generic_question",
             "input_key": "user_input",
-            "output_key": "final_response",
+            "output_key": "output_text",
+        },
+        {
+            "function": "print_value",
+            "input_key": "output_text",
+            "output_key": None,
         },
     ],
 }
