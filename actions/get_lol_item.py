@@ -97,6 +97,7 @@ ACTION_CHAIN = {
         "description": "Restituisce una descrizione dettagliata di un oggetto di League of Legends.",
         "name": "GET_LOL_ITEMS",
         "verbose_name": "Descrivi Oggetto League of Legends",
+        "input_action": False,
     },
     "steps": [
         {
@@ -121,3 +122,7 @@ ACTION_CHAIN = {
         },
     ],
 }
+
+
+# Come vedi ci sono delle azioni che hanno come valore "input_action = True" queste azioni sono quelle che servono per acquisire l'input dell'utente. Ci sono invece azioni che hanno necessariamente bisogno di un input, come ad esempio la action "generic question". Voglio che quando parlo con il mio agent gli possa chiedere cose come "potresti darmi indicazioni sulla spada di doran?" Qui partirà la action "GET_ACTION" che mi identificherà che l'utente ha richiesto di ottenere informazioni su oggetti di lol, quindi sta invocando la funzione GET_LOL_ITEMS.
+# La action GET_LOL_ITEMS, ha come primo step quello di acquisire l'input dell'utente, quindi se lancio direttamente la funzione GET_LOL_ITEMS questa mi chiederà prima l'input e poi passerà agli step successivi. Ma nel caso in cui io sto parlando con il mio agent, e lui ha identificato automaticamente la funzione, l'input ce l'ho già. Dunque vorrei modificare la funzione execute_action affinché:

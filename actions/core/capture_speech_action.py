@@ -140,6 +140,7 @@ ACTION_CHAIN = {
     "metadata": {
         "name": "CAPTURE_SPEECH",
         "description": "Registra l'audio dell'utente e lo converte in testo quando preme INVIO.",
+        "input_action": True,
     },
     "steps": [
         {

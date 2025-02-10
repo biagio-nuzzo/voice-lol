@@ -12,7 +12,7 @@ def generate_prompt(user_input):
     """
     Genera un prompt dinamico per classificare le richieste dell'utente basato sulle azioni registrate.
     """
-    actions = get_action_registry()
+    actions = get_action_registry(exclude_core=True)
 
     actions_list = "\n".join(
         [
@@ -68,6 +68,7 @@ ACTION_CHAIN = {
         "description": "Identifica l'azione richiesta dall'utente.",
         "name": "GET_ACTION",
         "verbose_name": "Identificazione Azione",
+        "input_action": False,
     },
     "steps": [
         {

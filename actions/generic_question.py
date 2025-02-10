@@ -37,6 +37,7 @@ ACTION_CHAIN = {
         "description": "Risponde a una domanda generica.",
         "name": "GENERIC_QUESTION",
         "verbose_name": "Risposta Domanda Generica",
+        "input_action": False,
     },
     "steps": [
         {

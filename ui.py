@@ -91,7 +91,7 @@ class ActionLauncherApp(QWidget):
         """
         Recupera le action disponibili e crea un pulsante per ognuna.
         """
-        actions = get_action_registry()
+        actions = get_action_registry(exclude_core=True)
 
         if not actions:
             self.terminal_output.append("⚠️ Nessuna azione disponibile!")

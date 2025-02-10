@@ -11,6 +11,8 @@ ACTION_CHAIN = {
     "metadata": {
         "name": "PRINT_VALUE",
         "description": "Stampa in console un valore ricevuto in input.",
+        "verbose_name": "Stampa Valore",
+        "input_action": False,
     },
     "steps": [
         {

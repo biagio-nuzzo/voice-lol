@@ -34,6 +34,8 @@ ACTION_CHAIN = {
     "metadata": {
         "name": "TEXT_TO_AUDIO",
         "description": "Pulisce un testo e lo converte in un file audio.",
+        "verbose_name": "Testo in Audio",
+        "input_action": False,
     },
     "steps": [
         {

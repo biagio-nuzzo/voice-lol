@@ -157,7 +157,7 @@ def clean_text_for_tts(text):
     return text
 
 
-def get_action_registry():
+def get_action_registry(exclude_core=False):
     base_actions_dir = os.path.join(os.path.dirname(__file__), "actions")
     core_actions_dir = os.path.join(base_actions_dir, "core")
 
@@ -204,7 +204,8 @@ def get_action_registry():
                         actions_registry[action_name] = action_chain
                         print(f"✅ Registrata azione: {action_name}")
 
-    scan_directory(core_actions_dir, "actions.core")
+    if not exclude_core:
+        scan_directory(core_actions_dir, "actions.core")
     scan_directory(base_actions_dir, "actions")
 
     print(f"📌 Azioni registrate: {list(actions_registry.keys())}")

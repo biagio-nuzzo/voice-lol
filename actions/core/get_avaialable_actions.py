@@ -32,6 +32,7 @@ ACTION_CHAIN = {
         "description": "Genera una descrizione vocale delle azioni disponibili dell'assistente.",
         "name": "LIST_AVAILABLE_ACTIONS",
         "verbose_name": "Elenco Azioni Disponibili",
+        "input_action": False,
     },
     "steps": [
         {

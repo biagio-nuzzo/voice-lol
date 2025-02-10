@@ -11,6 +11,8 @@ ACTION_CHAIN = {
     "metadata": {
         "name": "GET_KEYBOARD_INPUT",
         "description": "Acquisisce un input dall'utente via tastiera e lo restituisce.",
+        "verbose_name": "Input da Tastiera",
+        "input_action": True,
     },
     "steps": [
         {

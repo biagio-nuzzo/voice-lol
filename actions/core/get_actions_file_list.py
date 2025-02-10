@@ -32,6 +32,7 @@ ACTION_CHAIN = {
         "name": "LIST_ACTIONS_FILE",
         "description": "Restituisce la lista dei file nella cartella actions",
         "verbose_name": "Elenco File Azioni",
+        "input_action": False,
     },
     "steps": [
         {

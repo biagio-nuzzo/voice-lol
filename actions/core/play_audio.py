@@ -14,6 +14,8 @@ ACTION_CHAIN = {
     "metadata": {
         "name": "PLAY_AUDIO",
         "description": "Riproduce un file audio fornito in input.",
+        "verbose_name": "Riproduzione Audio",
+        "input_action": False,
     },
     "steps": [
         {
