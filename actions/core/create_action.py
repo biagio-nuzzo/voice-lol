@@ -54,7 +54,7 @@ def llm_generate_action_code(action_name, action_description):
                 }},
             "steps": [
                 {{
-                    "function": llm_action_name,
+                    "function": "llm_action_name",
                     "input_key": "user_input",
                     "output_key": "final_response",
                 }}
@@ -141,6 +141,8 @@ def llm_create_action(user_input):
 
     if response.status_code == 200:
         data = response.json()["choices"][0]["text"].strip()
+
+        print("Data", data)
 
         # Estrai solo la parte JSON
         match = re.search(r"\{.*\}", data, re.DOTALL)

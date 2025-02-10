@@ -34,6 +34,14 @@ class ActionLauncherApp(QWidget):
         self.action_frame.setFixedWidth(240)  # 30% di 800px ≈ 240px
         self.action_layout = QVBoxLayout(self.action_frame)
 
+        # **Pulsante per aggiornare la lista delle action**
+        self.refresh_button = QPushButton("🔄 Aggiorna Azioni")
+        self.refresh_button.setFont(QFont("Arial", 12))
+        self.refresh_button.clicked.connect(self.refresh_action_buttons)
+        self.action_layout.addWidget(
+            self.refresh_button
+        )  # 🔹 Aggiunto sopra i pulsanti
+
         # Scroll area per i pulsanti
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
@@ -94,6 +102,20 @@ class ActionLauncherApp(QWidget):
             button.setFont(QFont("Arial", 12))
             button.clicked.connect(lambda _, a=action_name: self.run_action(a))
             self.action_layout.addWidget(button)
+
+    def refresh_action_buttons(self):
+        """
+        Pulisce e ricarica la lista dei pulsanti delle action disponibili.
+        """
+        # Rimuove tutti i widget tranne il pulsante "Aggiorna Azioni"
+        while (
+            self.action_layout.count() > 1
+        ):  # Mantiene solo il primo widget (refresh button)
+            widget = self.action_layout.takeAt(1).widget()
+            if widget:
+                widget.deleteLater()
+
+        self.create_action_buttons()  # Ricarica le action disponibili
 
     def run_action(self, action_name):
         """
