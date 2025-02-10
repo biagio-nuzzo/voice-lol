@@ -100,13 +100,23 @@ ACTION_CHAIN = {
     },
     "steps": [
         {
+            "function": "get_keyboard_input",
+            "input_key": None,
+            "output_key": "user_input",
+        },
+        {
             "function": "llm_get_item",
             "input_key": "user_input",
-            "output_key": "item_key",
+            "output_key": "lol_item",
         },
         {
             "function": "generate_description",
-            "input_key": "item_key",
+            "input_key": "lol_item",
+            "output_key": "lol_item_description",
+        },
+        {
+            "function": "print_value",
+            "input_key": "lol_item_description",
             "output_key": "final_response",
         },
     ],
