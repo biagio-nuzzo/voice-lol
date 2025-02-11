@@ -29,7 +29,7 @@ def execute_action(action_name):
         }
 
 
-ACTION_EXECUTION = {
+ACTION_CHAIN = {
     "metadata": {
         "description": "Identifica ed esegue l'azione richiesta dall'utente.",
         "name": "EXECUTE_ACTION",

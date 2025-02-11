@@ -11,5 +11,10 @@ ACTION_CHAIN = {
             "input_key": None,
             "output_key": "user_keyboard_input",
         },
+        {
+            "function": "print_value",
+            "input_key": "user_keyboard_input",
+            "output_key": "final_response",
+        },
     ],
 }
