@@ -1,5 +1,8 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout
-from app.actions import ActionsPanel
+# PyQt
+from PyQt5.QtWidgets import QWidget, QVBoxLayout
+
+# UI Components
+from app.ui.actions import ActionsPanel
 
 
 class MainUI(QWidget):

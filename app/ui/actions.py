@@ -1,6 +1,11 @@
+# PyQt
 from PyQt5.QtWidgets import QVBoxLayout, QWidget, QScrollArea, QPushButton
-from app.dialogs import SpeechRecognitionDialog
-from app.recognition import SpeechRecognitionManager
+
+# UI Components
+from app.ui.dialogs import SpeechRecognitionDialog
+
+# Audio recognition
+from app.capture_speech.recognition import SpeechRecognitionManager
 
 
 class ActionsPanel(QWidget):

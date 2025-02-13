@@ -1,7 +1,12 @@
+# Built-in
 import sys
 import os
+
+# PyQt
 from PyQt5.QtWidgets import QApplication
-from app.ui import MainUI
+
+# UI
+from app.ui.ui import MainUI
 
 # Aggiungiamo il percorso della cartella principale per evitare ModuleNotFoundError
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))

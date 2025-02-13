@@ -1,3 +1,4 @@
+# Actions
 from actions.core.get_keyboard_input import GET_KEYBOARD_INPUT_ACTION
 from actions.core.print_value import PRINT_VALUE_ACTION
 from actions.custom.start_agent import START_AGENT

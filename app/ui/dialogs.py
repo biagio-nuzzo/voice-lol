@@ -1,5 +1,8 @@
+# PyQt
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QPushButton, QTextEdit
-from app.recognition import SpeechRecognitionThread
+
+# Audio recognition
+from app.capture_speech.recognition import SpeechRecognitionThread
 
 
 class SpeechRecognitionDialog(QDialog):
