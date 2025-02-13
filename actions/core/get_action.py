@@ -27,7 +27,7 @@ def generate_prompt(user_input):
 
         {actions_list}
 
-        ⚠️ **Regole importanti:**
+        **Regole importanti:**
         1. **Rispondi solo con un JSON nel formato:**
         ```json
         {{"action": "NOME_AZIONE"}}

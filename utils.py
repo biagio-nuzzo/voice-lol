@@ -45,14 +45,14 @@ def execute_action(action_key, user_input):
                         function(input_value) if input_key is not None else function()
                     )
                 else:
-                    print(f"⚠️ Funzione '{function_name}' non trovata!")
+                    print(f" Funzione '{function_name}' non trovata!")
                     output_value = None
         elif callable(function_name):
             output_value = (
                 function_name(input_value) if input_key is not None else function_name()
             )
         else:
-            print(f"⚠️ Errore: '{function_name}' non è una funzione valida!")
+            print(f" Errore: '{function_name}' non è una funzione valida!")
             output_value = None
 
         context[output_key] = output_value
@@ -165,7 +165,7 @@ def get_action_registry(exclude_core=False):
 
     def scan_directory(directory, namespace):
         if not os.path.exists(directory):
-            print(f"⚠️ Attenzione: La cartella '{directory}' non esiste. Ignorata.")
+            print(f" Attenzione: La cartella '{directory}' non esiste. Ignorata.")
             return
 
         for filename in os.listdir(directory):

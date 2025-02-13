@@ -14,7 +14,7 @@ from settings import TTS_MODEL
 def generate_audio(text):
     """Genera un file audio dal testo dato utilizzando il modello configurato."""
     if not text:  # 🔹 Se il testo è None o vuoto, assegna un valore di default
-        print("⚠️ Nessun testo riconosciuto! Non posso generare l'audio.")
+        print("Nessun testo riconosciuto! Non posso generare l'audio.")
         return None
 
     print("🔊 Pulizia testo per la generazione audio...")

@@ -1,0 +1,7 @@
+Metadata-Version: 2.2
+Name: fastchain
+Version: 1.0.0
+Requires-Dist: PyQt5
+Requires-Dist: vosk
+Requires-Dist: pyaudio
+Dynamic: requires-dist
