@@ -8,7 +8,7 @@ __pycache__/
 venv/
 coqui/
 .env/
-
+fastchain_project.zip
 # togli tutti i pychache anche quelli annidati
 **/__pycache__/
 

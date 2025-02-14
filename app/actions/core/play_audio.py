@@ -1,5 +1,5 @@
 # Utils
-from utils import play_audio
+from app.utils import play_audio
 
 
 def play_audio_wrapper(audio_file):

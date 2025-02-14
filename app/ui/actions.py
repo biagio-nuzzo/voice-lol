@@ -1,40 +1,66 @@
-# PyQt
-from PyQt5.QtWidgets import QVBoxLayout, QWidget, QScrollArea, QPushButton
+from PyQt5.QtWidgets import QVBoxLayout, QWidget, QScrollArea, QPushButton, QTextEdit
+from PyQt5.QtGui import QFont
 
 # UI Components
-from app.ui.dialogs import SpeechRecognitionDialog
-
-# Audio recognition
-from app.capture_speech.recognition import SpeechRecognitionManager
+from app.actions.core.get_keyboard_input import get_keyboard_input
 
 
 class ActionsPanel(QWidget):
     """Sezione della UI che contiene tutti i pulsanti delle action"""
 
-    def __init__(self):
+    def __init__(self, main_ui):
         super().__init__()
 
-        self.recognition_manager = SpeechRecognitionManager()
+        self.main_ui = main_ui  # Riferimento a MainUI
 
         layout = QVBoxLayout()
+        layout.setContentsMargins(1, 1, 1, 1)
+
+        # Terminale live
+        self.terminal_output = QTextEdit()
+        self.terminal_output.setReadOnly(True)
+        self.terminal_output.setStyleSheet(
+            "background-color: black; color: white; font-family: monospace;"
+        )
+        layout.addWidget(self.terminal_output, 70)
 
         # Sezione scrollabile per i pulsanti delle action
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
         self.action_frame = QWidget()
         self.action_layout = QVBoxLayout(self.action_frame)
+        self.action_layout.setSpacing(2)
 
-        # Aggiunta del pulsante per il riconoscimento vocale
-        self.start_voice_button = QPushButton("Avvia Riconoscimento Vocale")
-        self.start_voice_button.clicked.connect(self.start_voice_recognition)
-        self.action_layout.addWidget(self.start_voice_button)
+        # Stile pulsanti
+        button_style = (
+            "background-color: #4CAF50;"
+            "color: white;"
+            "border-radius: 8px;"
+            "padding: 10px;"
+            "font-size: 16px;"
+        )
+
+        # Pulsante per attivare Capture Speech
+        self.capture_speech_button = QPushButton("Attivare Capture Speech")
+        self.capture_speech_button.setFont(QFont("Arial", 12, QFont.Bold))
+        self.capture_speech_button.setStyleSheet(button_style)
+        self.capture_speech_button.clicked.connect(self.main_ui.start_capture_speech)
+        self.action_layout.addWidget(self.capture_speech_button)
+
+        # Pulsante per ottenere input da tastiera
+        self.keyboard_input_button = QPushButton("Get Keyboard Input")
+        self.keyboard_input_button.setFont(QFont("Arial", 12, QFont.Bold))
+        self.keyboard_input_button.setStyleSheet(button_style)
+        self.keyboard_input_button.clicked.connect(
+            lambda: self.log_output(get_keyboard_input())
+        )
+        self.action_layout.addWidget(self.keyboard_input_button)
 
         self.scroll_area.setWidget(self.action_frame)
-        layout.addWidget(self.scroll_area)
-
+        layout.addWidget(self.scroll_area, 40)
         self.setLayout(layout)
+        self.setStyleSheet("background-color: #2C3E50; color: white; padding: 10px;")
 
-    def start_voice_recognition(self):
-        """Avvia la finestra di riconoscimento vocale"""
-        dialog = SpeechRecognitionDialog(self.recognition_manager)
-        dialog.exec_()
+    def log_output(self, output):
+        """Stampa il testo nel terminale live"""
+        self.terminal_output.append(output)

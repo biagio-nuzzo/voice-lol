@@ -2,11 +2,7 @@ README.md
 setup.py
 app/__init__.py
 app/action_registry.py
-app/actions.py
-app/dialogs.py
 app/main.py
-app/recognition.py
-app/ui.py
 fastchain/__init__.py
 fastchain/cli.py
 fastchain/core.py

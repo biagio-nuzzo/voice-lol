@@ -1,10 +1,18 @@
+# Built-in
 import json
+import os
+
+# Audio
 import vosk
 import pyaudio
+
+# PyQt
 from PyQt5.QtCore import QThread, pyqtSignal
 
-# Percorso del modello Vosk
-MODEL_PATH = "actions/core/capture_speech/models/vosk-model-it"
+
+# Ottieni il percorso corretto del modello
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Percorso di recognition.py
+MODEL_PATH = os.path.join(BASE_DIR, "models", "vosk-model-it")
 
 
 class SpeechRecognitionManager:

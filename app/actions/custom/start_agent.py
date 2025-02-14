@@ -1,4 +1,4 @@
-from FastChain.core import Action
+from fastchain.core import Action
 from actions.core.capture_speech.capture_speech import CaptureSpeechAction
 from actions.core.print_value import print_value
 

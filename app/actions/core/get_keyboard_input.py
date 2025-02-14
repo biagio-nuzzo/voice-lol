@@ -1,4 +1,7 @@
-from FastChain.core import Action
+# FastChain
+from fastchain.core import Action
+
+# PyQt
 from PyQt5.QtWidgets import QInputDialog
 
 

@@ -1,4 +1,4 @@
-from FastChain.core import Action
+from fastchain.core import Action
 
 
 def print_value(value):

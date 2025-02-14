@@ -5,7 +5,7 @@ from tts_modules.tts_tts import generate_audio_tts
 from tts_modules.bark_tts import generate_audio_bark
 
 # Utils
-from utils import clean_text_for_tts
+from app.utils import clean_text_for_tts
 
 # Settings
 from settings import TTS_MODEL

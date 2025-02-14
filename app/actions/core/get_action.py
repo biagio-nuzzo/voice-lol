@@ -5,7 +5,7 @@ import re
 # Settings
 from settings import API_URL, GEMMA
 
-from utils import get_action_registry
+from app.utils import get_action_registry
 
 
 def generate_prompt(user_input):
