@@ -1,84 +1,54 @@
-# PyQt
-from PyQt5.QtWidgets import QWidget, QVBoxLayout
-from PyQt5.QtCore import pyqtSignal, QObject
-import threading
+# PyQt5
+from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QWidget, QTextEdit
 
-# UI Components
-from app.ui.actions import ActionsPanel
-from app.actions.core.capture_speech.recognition import SpeechRecognitionManager
-from app.ui.dialogs import SpeechRecognitionDialog
-
-
-class CaptureSpeechWorker(QObject):
-    """Worker che avvia il riconoscimento vocale senza bloccare la UI"""
-
-    open_dialog = pyqtSignal()
-
-    def __init__(self, recognition_manager):
-        super().__init__()
-        self.recognition_manager = recognition_manager
-        self.thread = None  # Nuovo thread Python
-
-    def run(self):
-        """Avvia il riconoscimento vocale in un thread Python"""
-        self.thread = threading.Thread(target=self._run_dialog)
-        self.thread.start()
-
-    def _run_dialog(self):
-        """Esegue il dialogo di riconoscimento vocale nel main thread"""
-        self.open_dialog.emit()
-
-    def stop(self):
-        """Ferma il worker in modo sicuro"""
-        if self.thread and self.thread.is_alive():
-            self.thread.join()
+# Actions
+from actions.core.capture_speech.capture_speech import CAPTURE_SPEECH_ACTION
 
 
 class MainUI(QWidget):
-    """Interfaccia principale con pulsanti per tutte le action"""
-
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("FastChain - Voice Agent")
-        self.setGeometry(100, 100, 600, 400)
+        self.initUI()
+        self.is_recording = False
+        self.recording_thread = None
+
+    def initUI(self):
+        self.setWindowTitle("Registratore Vocale")
+
+        self.button = QPushButton("Avvia Registrazione", self)
+        self.button.clicked.connect(self.toggle_recording)
+
+        self.text_display = QTextEdit(self)
+        self.text_display.setReadOnly(True)
 
         layout = QVBoxLayout()
-
-        # Creazione dei worker all'avvio
-        self.recognition_manager = SpeechRecognitionManager()
-        self.recognition_manager.main_ui = (
-            self  # Passa MainUI alla gestione del riconoscimento vocale
-        )
-
-        self.capture_speech_worker = CaptureSpeechWorker(self.recognition_manager)
-        self.capture_speech_worker.open_dialog.connect(self.open_speech_dialog)
-
-        # Creazione del pannello azioni
-        self.actions_panel = ActionsPanel(self)
-        layout.addWidget(self.actions_panel)
-
+        layout.addWidget(self.button)
+        layout.addWidget(self.text_display)
         self.setLayout(layout)
 
-    def start_capture_speech(self):
-        """Avvia il riconoscimento vocale usando il worker esistente"""
-        if (
-            not self.capture_speech_worker.thread
-            or not self.capture_speech_worker.thread.is_alive()
-        ):
-            self.capture_speech_worker.run()
+    def toggle_recording(self):
+        if self.is_recording:
+            self.is_recording = False
+            self.button.setText("Avvia Registrazione")
+            self.recording_thread.stop()  # Ferma il thread di registrazione
+        else:
+            self.is_recording = True
+            self.button.setText("Interrompi Registrazione")
+            self.text_display.clear()  # Pulisce il testo precedente
+            self.start_recording()
 
-    def stop_capture_speech(self):
-        """Ferma il riconoscimento vocale senza chiudere l'app"""
-        if self.capture_speech_worker and self.capture_speech_worker.thread.is_alive():
-            self.capture_speech_worker.stop()
+    def start_recording(self):
+        self.recording_thread = CAPTURE_SPEECH_ACTION.execute()
+        self.recording_thread.partial_result.connect(self.update_text_display)
+        self.recording_thread.finished.connect(self.on_recording_finished)
+        self.recording_thread.start()
 
-        print("Riconoscimento vocale fermato.")  # Debug
+    def update_text_display(self, text):
+        self.text_display.setPlainText(
+            text
+        )  # Aggiorna il testo mantenendo il contenuto completo
 
-        # IMPORTANTE: Se la finestra si chiude per errore, riaprila
-        if not self.isVisible():
-            self.show()
-
-    def open_speech_dialog(self):
-        """Apre il dialogo dal main thread"""
-        dialog = SpeechRecognitionDialog(self.recognition_manager)
-        dialog.exec_()
+    def on_recording_finished(self, text):
+        self.text_display.append(text)
+        self.is_recording = False
+        self.button.setText("Avvia Registrazione")
