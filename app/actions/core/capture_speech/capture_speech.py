@@ -89,23 +89,22 @@ class SpeechRecorderThread(QThread):
 
     def run(self):
         speech_action = CaptureSpeechAction()
-        full_text = ""
-        for (
-            text
-        ) in (
-            speech_action.execute()
-        ):  # Supponiamo che execute() restituisca parole progressivamente
+        self.full_text = ""  # Memorizza tutto il testo progressivamente
+        for text in speech_action.execute():
             self.mutex.lock()
             if self.should_stop:
                 self.mutex.unlock()
                 break
-            full_text += (
-                " " + text if full_text else text
-            )  # Costruiamo il testo progressivamente
-            self.partial_result.emit(
-                full_text.strip()
-            )  # Emit una versione aggiornata dell'intero testo
+
+            # Aggiungiamo il testo nuovo se non è già incluso
+            if text and text not in self.full_text:
+                self.full_text += " " + text if self.full_text else text
+                self.partial_result.emit(
+                    self.full_text.strip()
+                )  # Invia tutto il testo progressivo
+
             self.mutex.unlock()
+
         self.finished.emit("Registrazione completata")
 
     def stop(self):
