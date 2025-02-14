@@ -21,7 +21,7 @@ class MainUI(QWidget):
         self.button_record.clicked.connect(self.toggle_recording)
 
         self.button_input = QPushButton("Inserisci Testo", self)  # Nuovo pulsante
-        self.button_input.clicked.connect(self.get_keyboard_input)
+        self.button_input.clicked.connect(GET_KEYBOARD_INPUT_ACTION.execute)
 
         self.text_display = QTextEdit(self)
         self.text_display.setReadOnly(True)
@@ -73,11 +73,3 @@ class MainUI(QWidget):
         self.text_display.append(text)
         self.is_recording = False
         self.button_record.setText("Avvia Registrazione")
-
-    def get_keyboard_input(self):
-        """Esegue l'azione GET_KEYBOARD_INPUT_ACTION e aggiorna il testo nella UI."""
-        text = GET_KEYBOARD_INPUT_ACTION.execute()
-        if text:
-            self.update_text_display(
-                text
-            )  # Aggiunge il testo inserito al riquadro di testo
