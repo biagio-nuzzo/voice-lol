@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QVBoxLayout, QWidget, QScrollArea, QPushButton, QTex
 from PyQt5.QtGui import QFont
 
 # UI Components
-from app.actions.core.get_keyboard_input import get_keyboard_input
+from app.actions.core.get_keyboard_input import GetKeyboardInputAction
 
 
 class ActionsPanel(QWidget):
@@ -52,7 +52,7 @@ class ActionsPanel(QWidget):
         self.keyboard_input_button.setFont(QFont("Arial", 12, QFont.Bold))
         self.keyboard_input_button.setStyleSheet(button_style)
         self.keyboard_input_button.clicked.connect(
-            lambda: self.log_output(get_keyboard_input())
+            lambda: self.log_output(GetKeyboardInputAction().execute())
         )
         self.action_layout.addWidget(self.keyboard_input_button)
 
