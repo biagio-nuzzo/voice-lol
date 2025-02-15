@@ -1,75 +1,43 @@
-from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QWidget, QTextEdit, QInputDialog
-
-# Actions
-from actions.core.capture_speech.capture_speech import CAPTURE_SPEECH_ACTION
-from actions.core.get_keyboard_input import (
-    GET_KEYBOARD_INPUT_ACTION,
-)  # Importiamo l'azione
+from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QWidget, QTextEdit, QApplication
+from app.actions.core.capture_speech.capture_speech import (
+    SpeechInputDialog,
+)  # Importiamo il dialogo per la registrazione vocale
+from fastchain.manager import FastChainManager
 
 
 class MainUI(QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
-        self.is_recording = False
-        self.recording_thread = None
 
     def initUI(self):
         self.setWindowTitle("Registratore Vocale")
 
         self.button_record = QPushButton("Avvia Registrazione", self)
-        self.button_record.clicked.connect(self.toggle_recording)
+        self.button_record.clicked.connect(self.start_recording_dialog)
 
-        self.button_input = QPushButton("Inserisci Testo", self)  # Nuovo pulsante
-        self.button_input.clicked.connect(GET_KEYBOARD_INPUT_ACTION.execute)
-
-        self.text_display = QTextEdit(self)
-        self.text_display.setReadOnly(True)
+        self.button_input = QPushButton("Inserisci Testo", self)
+        self.button_input.clicked.connect(self.get_user_input)
 
         layout = QVBoxLayout()
         layout.addWidget(self.button_record)
-        layout.addWidget(self.button_input)  # Aggiungiamo il nuovo pulsante
-        layout.addWidget(self.text_display)
+        layout.addWidget(self.button_input)
         self.setLayout(layout)
 
-    def toggle_recording(self):
-        if self.is_recording:
-            self.is_recording = False
-            self.button_record.setText("Avvia Registrazione")
-            self.recording_thread.stop()  # Ferma il thread di registrazione
-        else:
-            self.is_recording = True
-            self.button_record.setText("Interrompi Registrazione")
-            self.text_display.clear()  # Pulisce il testo precedente
-            self.start_recording()
+    def start_recording_dialog(self):
+        """Apre il dialog di registrazione vocale."""
+        dialog = SpeechInputDialog(self)
+        dialog.exec_()  # Esegue il dialogo in modalità bloccante
 
-    def start_recording(self):
-        self.recording_thread = CAPTURE_SPEECH_ACTION.execute()
-        self.recording_thread.partial_result.connect(self.update_text_display)
-        self.recording_thread.finished.connect(self.on_recording_finished)
-        self.recording_thread.start()
+    def get_user_input(self):
+        """Apre la finestra per l'input testuale."""
+        FastChainManager.run_action("GET_KEYBOARD_INPUT")
 
-    def update_text_display(self, text):
-        current_text = self.text_display.toPlainText().strip()
 
-        # Manteniamo un set delle parole già visualizzate
-        displayed_words = set(current_text.split())
-        new_words = text.split()
+if __name__ == "__main__":
+    import sys
 
-        # Filtriamo solo le parole che non sono già state stampate
-        words_to_add = [word for word in new_words if word not in displayed_words]
-
-        if words_to_add:
-            updated_text = (
-                current_text + " " + " ".join(words_to_add)
-                if current_text
-                else " ".join(words_to_add)
-            )
-            self.text_display.setPlainText(
-                updated_text.strip()
-            )  # Aggiorniamo il testo senza nuove righe
-
-    def on_recording_finished(self, text):
-        self.text_display.append(text)
-        self.is_recording = False
-        self.button_record.setText("Avvia Registrazione")
+    app = QApplication(sys.argv)
+    main_window = MainUI()
+    main_window.show()
+    sys.exit(app.exec_())

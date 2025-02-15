@@ -7,6 +7,7 @@ import vosk
 import pyaudio
 
 # PyQt5
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTextEdit, QPushButton
 from PyQt5.QtCore import QThread, pyqtSignal, QMutex
 
 # Fastchain
@@ -15,6 +16,50 @@ from fastchain.core import Action
 # Ottieni il percorso corretto del modello
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "models", "vosk-model-it")
+
+
+class SpeechInputDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Registrazione Vocale")
+        self.setFixedSize(400, 250)
+
+        self.layout = QVBoxLayout()
+
+        # Riquadro per mostrare il testo acquisito
+        self.text_display = QTextEdit(self)
+        self.text_display.setReadOnly(True)
+        self.layout.addWidget(self.text_display)
+
+        # Pulsante per interrompere la registrazione
+        self.stop_button = QPushButton("Stop Registrazione", self)
+        self.stop_button.clicked.connect(self.stop_recording)
+        self.layout.addWidget(self.stop_button)
+
+        self.setLayout(self.layout)
+        self.recording_thread = SpeechRecorderThread()
+        self.recording_thread.partial_result.connect(self.update_text_display)
+        self.recording_thread.finished.connect(self.on_recording_finished)
+
+        self.start_recording()
+
+    def start_recording(self):
+        """Avvia la registrazione vocale."""
+        self.recording_thread.start()
+
+    def update_text_display(self, text):
+        """Aggiorna il testo visualizzato nel dialogo"""
+        self.text_display.setPlainText(text.strip())
+
+    def stop_recording(self):
+        """Ferma la registrazione e chiude il dialogo"""
+        self.recording_thread.stop()
+        self.accept()
+
+    def on_recording_finished(self, text):
+        """Gestisce la fine della registrazione"""
+        self.text_display.setPlainText(text.strip())
+        self.accept()
 
 
 class CaptureSpeechAction:
@@ -27,7 +72,7 @@ class CaptureSpeechAction:
         self.should_stop = False  # Flag per fermare la registrazione
 
     def execute(self):
-        """Avvia il riconoscimento vocale e restituisce il testo progressivamente"""
+        """Avvia il riconoscimento vocale e restituisce il testo progressivamente."""
         input_device_index = None
         for i in range(self.mic.get_device_count()):
             device_info = self.mic.get_device_info_by_index(i)
@@ -36,6 +81,7 @@ class CaptureSpeechAction:
                 break
 
         if input_device_index is None:
+            print("[ERROR] Nessun microfono disponibile.")
             yield "Nessun microfono disponibile."
             return
 
@@ -49,29 +95,35 @@ class CaptureSpeechAction:
         )
         stream.start_stream()
 
+        full_text = ""
         try:
-            print("Inizio registrazione. Parla ora...")
+            print("[EXEC] Inizio registrazione. Parla ora...")
             while not self.should_stop:
                 data = stream.read(2048, exception_on_overflow=False)
                 if self.recognizer.AcceptWaveform(data):
                     result = json.loads(self.recognizer.Result())
                     text = result["text"].strip()
                     if text:
-                        yield text  # Invia il testo parziale
-                        print("Riconosciuto:", text)
+                        full_text += " " + text
+                        print("[STEP] Riconosciuto:", text)
+                        self.speech_recorder_thread.partial_result.emit(text)
+                        yield text  # <-- Ora restituisce il testo!
                 else:
                     partial_result = json.loads(self.recognizer.PartialResult())
                     partial_text = partial_result.get("partial", "").strip()
                     if partial_text:
-                        yield partial_text  # Invia il testo parziale
-                        print("Parziale:", partial_text)
+                        print("[STEP] Parziale:", partial_text)
+                        self.speech_recorder_thread.partial_result.emit(partial_text)
+                        yield partial_text  # <-- Restituisce i risultati parziali!
         except KeyboardInterrupt:
-            print("Interruzione del riconoscimento.")
+            print("[ERROR] Interruzione del riconoscimento.")
         finally:
             stream.stop_stream()
             stream.close()
             self.mic.terminate()
-            yield "Registrazione completata."
+            print("[EXEC] Fine registrazione:", full_text.strip())
+            self.speech_recorder_thread.finished.emit(full_text.strip())
+            yield full_text.strip()  # <-- Restituisce il testo finale!
 
     def stop(self):
         """Ferma la registrazione"""
@@ -84,33 +136,16 @@ class SpeechRecorderThread(QThread):
 
     def __init__(self):
         super().__init__()
-        self.should_stop = False
-        self.mutex = QMutex()
+        self.speech_action = CaptureSpeechAction()
+        self.speech_action.speech_recorder_thread = self
 
     def run(self):
-        speech_action = CaptureSpeechAction()
-        self.full_text = ""  # Memorizza tutto il testo progressivamente
-        for text in speech_action.execute():
-            self.mutex.lock()
-            if self.should_stop:
-                self.mutex.unlock()
-                break
-
-            # Aggiungiamo il testo nuovo se non è già incluso
-            if text and text not in self.full_text:
-                self.full_text += " " + text if self.full_text else text
-                self.partial_result.emit(
-                    self.full_text.strip()
-                )  # Invia tutto il testo progressivo
-
-            self.mutex.unlock()
-
+        for text in self.speech_action.execute():
+            self.partial_result.emit(text)
         self.finished.emit("Registrazione completata")
 
     def stop(self):
-        self.mutex.lock()
-        self.should_stop = True
-        self.mutex.unlock()
+        self.speech_action.stop()
 
 
 CAPTURE_SPEECH_ACTION = Action(

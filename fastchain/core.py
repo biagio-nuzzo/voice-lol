@@ -48,37 +48,48 @@ class Action:
         ]
 
     def execute(self, input_data: Any = None) -> Any:
-        """
-        Esegue gli step in sequenza, propagando l'output di uno step come input del successivo.
-        """
-        print(f"Esecuzione della action: {self.name}")
+        """Esegue gli step in sequenza, mostrando input, output ed eventuali errori."""
+        print(f"\n[EXEC] Inizio esecuzione action: {self.name}")
         data = input_data
+
         for step in self.steps:
             function = (
                 step.function
                 if callable(step.function)
                 else self._resolve_function(step.function)
             )
-            if function:
-                try:
-                    # Controlliamo se la funzione accetta parametri
-                    if step.input_type is None:
-                        data = function()
-                    else:
-                        data = function(data)
-                except TypeError as e:
-                    raise ValueError(f"Errore eseguendo {step.function}: {e}")
+
+            if not function:
+                print(f"[ERROR] Funzione {step.function} non trovata o non valida!")
+                continue
+
+            try:
+                print(f"[STEP] Esecuzione: {step.function} con input: {data}")
+                data = function() if step.input_type is None else function(data)
+                print(f"[STEP] Output: {data}")
+
+            except TypeError as e:
+                print(f"[ERROR] Errore eseguendo {step.function}: {e}")
+                return None
+
+        print(f"[EXEC] Fine esecuzione action: {self.name} - Risultato: {data}\n")
         return data
 
     def _resolve_function(self, function_name: str):
-        """
-        Risolve il nome della funzione in una funzione eseguibile se è stata passata come stringa.
-        """
+        """Risolve il nome della funzione e restituisce un riferimento eseguibile."""
         try:
             module_name, func_name = function_name.rsplit(".", 1)
             module = importlib.import_module(module_name)
-            return getattr(module, func_name, None)
-        except (ValueError, ModuleNotFoundError, AttributeError):
+            func = getattr(module, func_name, None)
+
+            if func is None:
+                print(
+                    f"[ERROR] Funzione {function_name} non trovata nel modulo {module_name}"
+                )
+            return func
+
+        except (ValueError, ModuleNotFoundError, AttributeError) as e:
+            print(f"[ERROR] Errore nel caricamento di {function_name}: {e}")
             return None
 
     def __repr__(self):
