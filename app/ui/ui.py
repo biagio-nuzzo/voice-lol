@@ -1,7 +1,7 @@
-from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QWidget, QTextEdit, QApplication
-from app.actions.core.capture_speech.capture_speech import (
-    SpeechInputDialog,
-)  # Importiamo il dialogo per la registrazione vocale
+# PyQt
+from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QWidget, QApplication
+
+# FastChain
 from fastchain.manager import FastChainManager
 
 
@@ -25,9 +25,9 @@ class MainUI(QWidget):
         self.setLayout(layout)
 
     def start_recording_dialog(self):
-        """Apre il dialog di registrazione vocale."""
-        dialog = SpeechInputDialog(self)
-        dialog.exec_()  # Esegue il dialogo in modalità bloccante
+        """Avvia il dialog di registrazione vocale tramite FastChainManager."""
+        print("STO LANCIANDO STO SCHIFO")
+        FastChainManager.run_action("CAPTURE_SPEECH")
 
     def get_user_input(self):
         """Apre la finestra per l'input testuale."""
