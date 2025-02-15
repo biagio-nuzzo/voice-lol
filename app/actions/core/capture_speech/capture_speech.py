@@ -46,7 +46,7 @@ class SpeechInputDialog(QDialog):
     def start_recording(self):
         self.recording_thread.start()
         self.exec_()
-        return self.result_text.strip()
+        return self.result_text  # Restituisce il testo catturato
 
     def update_text_display(self, text):
         """Aggiorna il testo visualizzato nel dialogo"""
@@ -88,9 +88,13 @@ class SpeechRecorderThread(QThread):
 class CaptureSpeechAction:
     """Classe per avviare il riconoscimento vocale"""
 
+    model = None  # Modello caricato solo una volta
+
     def __init__(self):
-        self.model = vosk.Model(MODEL_PATH)
-        self.recognizer = vosk.KaldiRecognizer(self.model, 44100)
+        if CaptureSpeechAction.model is None:
+            print("[INFO] Caricamento modello Vosk...")
+            CaptureSpeechAction.model = vosk.Model(MODEL_PATH)
+        self.recognizer = vosk.KaldiRecognizer(CaptureSpeechAction.model, 44100)
         self.mic = pyaudio.PyAudio()
         self.should_stop = False
 
