@@ -7,7 +7,8 @@ import pyaudio
 from fastchain.core import Action
 
 from app.ui.global_states import state  # state è un dizionario globale
-# state = {"recording": False, "speech_text": ""}
+
+# state = {"recording": False, "speech_text": "", "next_action": None}
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "models", "vosk-model-it")
@@ -102,7 +103,9 @@ class SpeechRecorderController(QObject):
 
     def poll_recording_state(self):
         if not state["recording"] and self.is_recording:
-            print("[Controller] QTimer: stato globale 'recording' False, forzo stop del thread.")
+            print(
+                "[Controller] QTimer: stato globale 'recording' False, forzo stop del thread."
+            )
             if self.recorder_thread:
                 self.recorder_thread.stop()
                 if self.recorder_thread.isRunning():
@@ -111,15 +114,18 @@ class SpeechRecorderController(QObject):
             self.is_recording = False
             self.recording_state_changed.emit(self.is_recording)
 
-    def start_capture(self, next_action_name=None):
+    def start_capture(self, next_action=None):
+        if next_action is None:
+            raise ValueError("La next_action deve essere passata a start_capture.")
+        # Salviamo la next action nello state globale
+        state["next_action"] = next_action
+
         if self.is_recording:
             print("[Controller] Tentativo di avviare una registrazione già in corso.")
             return
 
         print("[Controller] Avviando la registrazione...")
         self.recorder_thread = SpeechRecorderThread()
-        # Salviamo la next action passata
-        self.recorder_thread.next_action_name = next_action_name
         self.recorder_thread.finished.connect(self.on_recording_finished)
         self.recorder_thread.start()
 
@@ -127,7 +133,7 @@ class SpeechRecorderController(QObject):
         state["recording"] = True  # Aggiorna lo stato globale
         self.recording_state_changed.emit(self.is_recording)
 
-    def stop_capture(self, trigger_next=True):
+    def stop_capture(self):
         print("[Controller] Fermando la registrazione...")
         if self.recorder_thread:
             self.recorder_thread.stop()
@@ -139,11 +145,15 @@ class SpeechRecorderController(QObject):
         self.is_recording = False
         state["recording"] = False  # Aggiorna lo stato globale
         self.recording_state_changed.emit(self.is_recording)
-        if trigger_next and self.recorder_thread:
-            next_act = getattr(self.recorder_thread, "next_action_name", None)
-            if next_act:
-                from fastchain.manager import FastChainManager
-                FastChainManager.run_action(next_act, state["speech_text"])
+        # Verifichiamo che sia presente una next action
+        if not state.get("next_action"):
+            raise ValueError("La next_action non è stata impostata.")
+        from fastchain.manager import FastChainManager
+
+        # Lancia la next action passando il testo registrato
+        FastChainManager.run_action(state["next_action"], state["speech_text"])
+        # Puliamo la next action dallo state
+        state["next_action"] = None
 
     def on_recording_finished(self, text):
         state["speech_text"] = text
@@ -164,11 +174,12 @@ class CaptureSpeechSingleton:
         return CaptureSpeechSingleton._controller_instance
 
 
-def trigger_next_action(speech_text, next_action_name):
+def trigger_next_action(speech_text, next_action):
     from fastchain.manager import FastChainManager
-    next_action = FastChainManager.run_action(next_action_name, speech_text)
+
+    next_action = FastChainManager.run_action(next_action, speech_text)
     if next_action:
-        print(f"[MANAGER] Esecuzione azione successiva: {next_action_name}")
+        print(f"[MANAGER] Esecuzione azione successiva: {next_action}")
     else:
         print("[MANAGER] Nessuna azione successiva, ciclo terminato.")
 
@@ -178,6 +189,7 @@ def trigger_next_action(speech_text, next_action_name):
 
 def create_toggle_button():
     from PyQt5.QtWidgets import QPushButton
+
     controller = CaptureSpeechSingleton.get_controller()
     button = QPushButton("Avvia Registrazione")
 
@@ -187,9 +199,11 @@ def create_toggle_button():
             result = stop_capture_action()
             button.setText("Avvia Registrazione")
             print("[UI] Registrazione fermata tramite bottone toggle. Result:", result)
-            # La next action viene già lanciata in stop_capture se trigger_next=True
         else:
-            controller.start_capture()  # Puoi passare qui il nome della next action se desideri
+            # Qui, oltre ad avviare la registrazione, passiamo la next action obbligatoria
+            # Ad esempio, se vogliamo che la prossima action sia "MY_NEXT_ACTION", la passiamo qui
+            # In un caso reale, questo valore dovrebbe provenire da un'altra parte (es. configurazione o input utente)
+            controller.start_capture("MY_NEXT_ACTION")
             button.setText("Stop Registrazione")
             print("[UI] Registrazione avviata tramite bottone toggle.")
 
@@ -197,18 +211,19 @@ def create_toggle_button():
     return button
 
 
-def start_capture_action(next_action_name=None):
-    CaptureSpeechSingleton.get_controller().start_capture(next_action_name)
+def start_capture_action(next_action=None):
+    # In questo caso next_action DEVE essere passato, altrimenti verrà lanciato un errore
+    CaptureSpeechSingleton.get_controller().start_capture(next_action)
     print("[ACTION] start_capture_action eseguita.")
 
 
 def stop_capture_action():
     controller = CaptureSpeechSingleton.get_controller()
-    # Chiamiamo stop_capture SENZA triggerare la next action automaticamente
-    # (in questo caso il toggle gestisce il trigger)
-    controller.stop_capture(trigger_next=False)
+    # Chiamiamo stop_capture: questa funzione lancerà automaticamente la next action
+    controller.stop_capture()
     print("[ACTION] stop_capture_action eseguita.")
     from PyQt5.QtCore import QEventLoop, QTimer
+
     loop = QEventLoop()
     result = None
 
@@ -223,8 +238,11 @@ def stop_capture_action():
     QTimer.singleShot(5000, loop.quit)
     loop.exec_()
 
-    if (result is None and controller.recorder_thread is not None and 
-            not controller.recorder_thread.isFinished()):
+    if (
+        result is None
+        and controller.recorder_thread is not None
+        and not controller.recorder_thread.isFinished()
+    ):
         print("[DEBUG] Thread non terminato entro il timeout, forzo terminate().")
         controller.recorder_thread.terminate()
         controller.recorder_thread.wait(1000)

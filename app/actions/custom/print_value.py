@@ -9,7 +9,7 @@ def print_value(value):
     return value  # 🔹 Restituiamo il valore per compatibilità con altre action
 
 
-PRINT_VALUE = Action(
+PRINT_VALUE_ACTION = Action(
     name="PRINT_VALUE",
     description="Stampa in console un valore ricevuto in input.",
     verbose_name="Stampa Valore",

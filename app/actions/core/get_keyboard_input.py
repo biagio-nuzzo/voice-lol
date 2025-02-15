@@ -16,7 +16,7 @@ class GetKeyboardInputAction:
         return text if ok else None
 
 
-GET_KEYBOARD_INPUT_ACTION = Action(
+GET_KEYBOARD_INPUT = Action(
     name="GET_KEYBOARD_INPUT",
     description="Acquisisce un input dall'utente via tastiera e lo restituisce.",
     verbose_name="Input da Tastiera",

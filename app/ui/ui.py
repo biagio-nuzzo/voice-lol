@@ -48,7 +48,7 @@ class MainUI(QWidget):
         if state["recording"]:
             self.controller.stop_capture()
         else:
-            self.controller.start_capture()
+            self.controller.start_capture("PRINT_VALUE")
 
     def test_auto_start_capture(self):
         """Avvia automaticamente la registrazione usando START_CAPTURE"""
