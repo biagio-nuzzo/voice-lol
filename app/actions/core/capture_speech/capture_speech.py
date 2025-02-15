@@ -1,7 +1,7 @@
 # capture_speech.py
 import json
 import os
-from PyQt5.QtCore import QThread, pyqtSignal, QObject
+from PyQt5.QtCore import QThread, pyqtSignal, QObject, QTimer
 import vosk
 import pyaudio
 from fastchain.core import Action
@@ -20,6 +20,7 @@ class SpeechRecorderThread(QThread):
     def __init__(self):
         super().__init__()
         self.should_stop = False
+        self.stream = None  # Riferimento allo stream aperto
         if not hasattr(SpeechRecorderThread, "model"):
             print("[INFO] Caricamento modello Vosk...")
             SpeechRecorderThread.model = vosk.Model(MODEL_PATH)
@@ -50,6 +51,7 @@ class SpeechRecorderThread(QThread):
             input_device_index=input_device_index,
         )
         stream.start_stream()
+        self.stream = stream  # Salva il riferimento allo stream
 
         full_text = ""
         print("[EXEC] Inizio registrazione. Parla ora...")
@@ -69,7 +71,10 @@ class SpeechRecorderThread(QThread):
                         print(f"[STEP] Testo acquisito: {text}")
                     self.recognizer.Reset()
         finally:
-            stream.stop_stream()
+            try:
+                stream.stop_stream()
+            except Exception as e:
+                print("[Thread] Errore nello stop dello stream:", e)
             stream.close()
             self.mic.terminate()
 
@@ -88,6 +93,27 @@ class SpeechRecorderController(QObject):
         super().__init__()
         self.is_recording = False
         self.recorder_thread = None
+        # QTimer per pollare periodicamente lo stato globale e gestire eventuali forzature di stop
+        self.state_timer = QTimer(self)
+        self.state_timer.setInterval(500)
+        self.state_timer.timeout.connect(self.poll_recording_state)
+        self.state_timer.start()
+
+    def poll_recording_state(self):
+        # Se globalmente la registrazione è stata impostata a False
+        # ma il controller pensa ancora che sia in corso, forziamo lo stop del thread
+        if not state["recording"] and self.is_recording:
+            print(
+                "[Controller] QTimer: stato globale 'recording' False, forzo stop del thread."
+            )
+            if self.recorder_thread:
+                self.recorder_thread.stop()
+                # Se il thread non ha terminato in modo naturale, usiamo terminate() (soluzione estrema)
+                if self.recorder_thread.isRunning():
+                    self.recorder_thread.terminate()
+                    print("[Controller] QTimer: thread terminato forzatamente.")
+            self.is_recording = False
+            self.recording_state_changed.emit(self.is_recording)
 
     def start_capture(self, next_action_name=None):
         if self.is_recording:
@@ -105,13 +131,14 @@ class SpeechRecorderController(QObject):
         self.recording_state_changed.emit(self.is_recording)
 
     def stop_capture(self):
-        if not self.is_recording:
-            print("[Controller] Nessuna registrazione in corso.")
-            return
-
         print("[Controller] Fermando la registrazione...")
         if self.recorder_thread:
             self.recorder_thread.stop()
+            if self.recorder_thread.stream:
+                try:
+                    self.recorder_thread.stream.stop_stream()
+                except Exception as e:
+                    print("[Controller] Errore nello stop dello stream:", e)
         self.is_recording = False
         state["recording"] = False  # Aggiorna lo stato globale
         self.recording_state_changed.emit(self.is_recording)
@@ -156,8 +183,6 @@ def create_toggle_button():
     button = QPushButton("Avvia Registrazione")
 
     def on_click():
-        from global_state import state  # Importa lo stato globale
-
         if state["recording"]:
             controller.stop_capture()
             button.setText("Avvia Registrazione")
