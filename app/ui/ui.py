@@ -1,9 +1,14 @@
-# main_ui.py
+# PyQt
 from PyQt5.QtWidgets import QVBoxLayout, QWidget, QApplication, QPushButton, QLabel
 from PyQt5.QtCore import QTimer
+
+# Global States
 from app.ui.global_states import state  # Importa il dizionario globale
-from app.actions.core.capture_speech.capture_speech import CaptureSpeechSingleton
-from fastchain.manager import FastChainManager
+
+# Actions
+from app.actions.core.capture_speech.capture_speech_controller import (
+    CaptureSpeechSingleton,
+)
 
 
 class MainUI(QWidget):
@@ -18,19 +23,11 @@ class MainUI(QWidget):
         self.button_record = QPushButton("Avvia Registrazione", self)
         self.button_record.clicked.connect(self.toggle_recording)
 
-        self.test_start_button = QPushButton("Test Start Button", self)
-        self.test_start_button.clicked.connect(self.test_auto_start_capture)
-
-        self.test_stop_button = QPushButton("Test Stop Button", self)
-        self.test_stop_button.clicked.connect(self.test_auto_stop_capture)
-
         # Aggiungo una label per mostrare il valore di speech_text
         self.label_speech_text = QLabel("Speech text: ", self)
 
         layout = QVBoxLayout()
         layout.addWidget(self.button_record)
-        layout.addWidget(self.test_start_button)
-        layout.addWidget(self.test_stop_button)
         layout.addWidget(self.label_speech_text)
         self.setLayout(layout)
 
@@ -49,14 +46,6 @@ class MainUI(QWidget):
             self.controller.stop_capture()
         else:
             self.controller.start_capture("PRINT_VALUE")
-
-    def test_auto_start_capture(self):
-        """Avvia automaticamente la registrazione usando START_CAPTURE"""
-        FastChainManager.run_action("START_CAPTURE")
-
-    def test_auto_stop_capture(self):
-        """Ferma automaticamente la registrazione usando STOP_CAPTURE"""
-        FastChainManager.run_action("STOP_CAPTURE")
 
     def update_button_text(self):
         # Aggiorna il testo del pulsante in base al valore globale di state["recording"]
