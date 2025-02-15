@@ -8,14 +8,14 @@ from actions.core.capture_speech.capture_speech_actions import (
 )
 
 # Actions Custom
-from actions.custom.print_value import PRINT_VALUE_ACTION
+from actions.custom.print_value import PRINT_VALUE
 
 
 # Dizionario che mappa tutte le Action disponibili
 ACTION_REGISTRY = {
     # Core
     "GET_KEYBOARD_INPUT": GET_KEYBOARD_INPUT,
-    "PRINT_VALUE": PRINT_VALUE_ACTION,
+    "PRINT_VALUE": PRINT_VALUE,
     "START_CAPTURE": START_CAPTURE,
     "STOP_CAPTURE": STOP_CAPTURE,
     "WIDGET_TOGGLE_CAPTURE": WIDGET_TOGGLE_CAPTURE,

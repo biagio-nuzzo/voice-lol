@@ -7,8 +7,16 @@ class FastChainManager:
 
     @staticmethod
     def get_available_actions():
-        """Restituisce la lista delle azioni registrate."""
-        return list(ACTION_REGISTRY.keys())
+        """Restituisce una lista di dizionari contenenti 'name', 'description' e 'verbose_name'
+        per ogni action registrata."""
+        return [
+            {
+                "name": action.name,
+                "description": action.description,
+                "verbose_name": action.verbose_name,
+            }
+            for action in ACTION_REGISTRY.values()
+        ]
 
     @staticmethod
     def run_action(action_name: str, input_data: Any = None):
