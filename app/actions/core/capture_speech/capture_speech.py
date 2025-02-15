@@ -2,104 +2,48 @@
 import json
 import os
 
+# PyQt
+from PyQt5.QtCore import QThread, pyqtSignal
+
 # Vosk
 import vosk
 import pyaudio
 
-# PyQt5
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTextEdit, QPushButton
-from PyQt5.QtCore import QThread, pyqtSignal
-
-# Fastchain
+# FastChain
 from fastchain.core import Action
 
-# Ottieni il percorso corretto del modello
+# Percorso del modello Vosk
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "models", "vosk-model-it")
 
-
-class SpeechInputDialog(QDialog):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Registrazione Vocale")
-        self.setFixedSize(400, 250)
-
-        self.layout = QVBoxLayout()
-
-        # Riquadro per mostrare il testo acquisito
-        self.text_display = QTextEdit(self)
-        self.text_display.setReadOnly(True)
-        self.layout.addWidget(self.text_display)
-
-        # Pulsante per interrompere la registrazione
-        self.stop_button = QPushButton("Stop Registrazione", self)
-        self.stop_button.clicked.connect(self.stop_recording)
-        self.layout.addWidget(self.stop_button)
-
-        self.setLayout(self.layout)
-
-        self.recording_thread = SpeechRecorderThread()
-        self.recording_thread.partial_result.connect(self.update_text_display)
-        self.recording_thread.finished.connect(self.on_recording_finished)
-        self.result_text = ""
-
-    def start_recording(self):
-        self.recording_thread.start()
-        self.exec_()
-        return self.result_text  # Restituisce il testo catturato
-
-    def update_text_display(self, text):
-        """Aggiorna il testo visualizzato nel dialogo"""
-        self.text_display.append(text.strip())
-
-    def stop_recording(self):
-        """Ferma la registrazione e chiude il dialogo"""
-        self.recording_thread.stop()
-        self.recording_thread.wait()
-        self.accept()
-
-    def on_recording_finished(self, text):
-        """Gestisce la fine della registrazione"""
-        self.result_text = text.strip()
-        self.text_display.append(self.result_text)
-        self.accept()
+# Variabile globale per salvare il testo acquisito
+global_speech_text = ""
 
 
 class SpeechRecorderThread(QThread):
-    partial_result = pyqtSignal(str)
-    finished = pyqtSignal(str)
+    """Thread per il riconoscimento vocale con Vosk"""
+
+    finished = pyqtSignal(str)  # Segnale per il testo finale
 
     def __init__(self):
         super().__init__()
-        self.speech_action = CaptureSpeechAction()
-        self.result_text = ""
+        self.should_stop = False  # Variabile per fermare la registrazione
+
+        # Carichiamo il modello solo una volta
+        if not hasattr(SpeechRecorderThread, "model"):
+            print("[INFO] Caricamento modello Vosk...")
+            SpeechRecorderThread.model = vosk.Model(MODEL_PATH)
+
+        self.recognizer = vosk.KaldiRecognizer(SpeechRecorderThread.model, 44100)
+        self.mic = pyaudio.PyAudio()
 
     def run(self):
-        for text in self.speech_action.execute():
-            self.partial_result.emit(text)
-            self.result_text += text + " "
-        self.finished.emit(self.result_text.strip())
+        """Avvia la registrazione vocale"""
+        global global_speech_text
+        global_speech_text = (
+            ""  # Puliamo il valore ogni volta che iniziamo una registrazione
+        )
 
-    def stop(self):
-        self.speech_action.stop()
-        self.wait()
-
-
-class CaptureSpeechAction:
-    """Classe per avviare il riconoscimento vocale"""
-
-    model = None  # Modello caricato solo una volta
-
-    def __init__(self):
-        if CaptureSpeechAction.model is None:
-            print("[INFO] Caricamento modello Vosk...")
-            CaptureSpeechAction.model = vosk.Model(MODEL_PATH)
-        self.recognizer = vosk.KaldiRecognizer(CaptureSpeechAction.model, 44100)
-        self.mic = pyaudio.PyAudio()
-        self.should_stop = False
-
-    def execute(self):
-        """Avvia il riconoscimento vocale e restituisce il testo progressivamente."""
         input_device_index = None
         for i in range(self.mic.get_device_count()):
             device_info = self.mic.get_device_info_by_index(i)
@@ -109,7 +53,8 @@ class CaptureSpeechAction:
 
         if input_device_index is None:
             print("[ERROR] Nessun microfono disponibile.")
-            return "Nessun microfono disponibile."
+            self.finished.emit("Nessun microfono disponibile.")
+            return
 
         stream = self.mic.open(
             format=pyaudio.paInt16,
@@ -131,45 +76,84 @@ class CaptureSpeechAction:
                     text = result["text"].strip()
                     if text:
                         full_text += " " + text
-                        yield text
-                else:
-                    partial_result = json.loads(self.recognizer.PartialResult())
-                    partial_text = partial_result.get("partial", "").strip()
-                    if partial_text:
-                        print("[STEP] Parziale:", partial_text)
-                        yield partial_text
-        except KeyboardInterrupt:
-            print("[ERROR] Interruzione del riconoscimento.")
+                        print(f"[STEP] Testo acquisito: {text}")
         finally:
             stream.stop_stream()
             stream.close()
             self.mic.terminate()
-            print("[EXEC] Fine registrazione:", full_text.strip())
-            yield full_text.strip()
+
+            # Salviamo il valore acquisito nella variabile globale
+            global_speech_text = full_text.strip()
+            print("[EXEC] Fine registrazione:", global_speech_text)
+            self.finished.emit(global_speech_text)  # Segnale con il risultato finale
 
     def stop(self):
         """Ferma la registrazione"""
         self.should_stop = True
 
 
-def test(input):
-    print("INPUTOOO", input)
+# Manteniamo il riferimento al thread di registrazione
+recorder_thread = None
 
 
-CAPTURE_SPEECH_ACTION = Action(
-    name="CAPTURE_SPEECH",
-    description="Registra l'audio dell'utente e lo converte in testo, restituendo l'output come input per altre azioni.",
-    verbose_name="Registrazione Vocale",
+def start_recording():
+    """Avvia la registrazione dell'audio in un thread separato"""
+    global recorder_thread
+    if recorder_thread and recorder_thread.isRunning():
+        print("[ERROR] Registrazione già in corso.")
+        return
+
+    print("[ACTION] Avvio registrazione...")
+    recorder_thread = SpeechRecorderThread()
+    recorder_thread.start()
+
+
+def stop_recording():
+    """Ferma la registrazione dell'audio"""
+    global recorder_thread
+    if not recorder_thread or not recorder_thread.isRunning():
+        print("[ERROR] Nessuna registrazione in corso.")
+        return
+
+    print("[ACTION] Fermando la registrazione...")
+    recorder_thread.stop()
+    recorder_thread.wait()  # Aspettiamo la terminazione del thread
+
+
+def get_recorded_text():
+    """Ritorna il valore della registrazione"""
+    print(f"[ACTION] Testo acquisito: {global_speech_text}")
+    return global_speech_text
+
+
+START_CAPTURE_SPEECH_ACTION = Action(
+    name="START_CAPTURE_SPEECH",
+    description="Avvia la registrazione vocale.",
+    verbose_name="Avvia Registrazione",
     steps=[
         {
-            "function": lambda: SpeechInputDialog().start_recording(),
+            "function": lambda: start_recording(),
             "input_type": None,
-            "output_type": str,
+            "output_type": None,
+        },
+    ],
+    input_action=True,
+)
+
+STOP_CAPTURE_SPEECH_ACTION = Action(
+    name="STOP_CAPTURE_SPEECH",
+    description="Ferma la registrazione vocale e restituisce il testo acquisito.",
+    verbose_name="Ferma Registrazione",
+    steps=[
+        {
+            "function": lambda: stop_recording(),
+            "input_type": None,
+            "output_type": None,
         },
         {
-            "function": test,
-            "input_type": str,
-            "output_type": None,
+            "function": lambda: get_recorded_text(),
+            "input_type": None,
+            "output_type": str,
         },
     ],
     input_action=True,
