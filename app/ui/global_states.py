@@ -1,2 +1,2 @@
 # global_state.py
-state = {"recording": False}
+state = {"recording": False, "speech_text": ""}

@@ -1,17 +1,16 @@
 # capture_speech.py
 import json
 import os
-from PyQt5.QtCore import QThread, pyqtSignal, QObject, QTimer
+from PyQt5.QtCore import QThread, pyqtSignal, QObject, QTimer, QEventLoop
 import vosk
 import pyaudio
 from fastchain.core import Action
 
-from app.ui.global_states import state  # Importa il dizionario globale
+from app.ui.global_states import state  # state è un dizionario globale
+# state = {"recording": False, "speech_text": ""}
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "models", "vosk-model-it")
-
-global_speech_text = ""
 
 
 class SpeechRecorderThread(QThread):
@@ -28,8 +27,8 @@ class SpeechRecorderThread(QThread):
         self.mic = pyaudio.PyAudio()
 
     def run(self):
-        global global_speech_text
-        global_speech_text = ""
+        # Inizializza il testo registrato nello state globale
+        state["speech_text"] = ""
         input_device_index = None
         for i in range(self.mic.get_device_count()):
             device_info = self.mic.get_device_info_by_index(i)
@@ -69,6 +68,8 @@ class SpeechRecorderThread(QThread):
                     if text:
                         full_text += " " + text
                         print(f"[STEP] Testo acquisito: {text}")
+                        # Aggiorna lo state globale ad ogni acquisizione
+                        state["speech_text"] = full_text.strip()
                     self.recognizer.Reset()
         finally:
             try:
@@ -78,9 +79,9 @@ class SpeechRecorderThread(QThread):
             stream.close()
             self.mic.terminate()
 
-            global_speech_text = full_text.strip()
-            print("[EXEC] Fine registrazione:", global_speech_text)
-            self.finished.emit(global_speech_text)
+            state["speech_text"] = full_text.strip()
+            print("[EXEC] Fine registrazione:", state["speech_text"])
+            self.finished.emit(state["speech_text"])
 
     def stop(self):
         self.should_stop = True
@@ -93,22 +94,17 @@ class SpeechRecorderController(QObject):
         super().__init__()
         self.is_recording = False
         self.recorder_thread = None
-        # QTimer per pollare periodicamente lo stato globale e gestire eventuali forzature di stop
+        # QTimer per verificare periodicamente lo stato globale e forzare lo stop se necessario
         self.state_timer = QTimer(self)
         self.state_timer.setInterval(500)
         self.state_timer.timeout.connect(self.poll_recording_state)
         self.state_timer.start()
 
     def poll_recording_state(self):
-        # Se globalmente la registrazione è stata impostata a False
-        # ma il controller pensa ancora che sia in corso, forziamo lo stop del thread
         if not state["recording"] and self.is_recording:
-            print(
-                "[Controller] QTimer: stato globale 'recording' False, forzo stop del thread."
-            )
+            print("[Controller] QTimer: stato globale 'recording' False, forzo stop del thread.")
             if self.recorder_thread:
                 self.recorder_thread.stop()
-                # Se il thread non ha terminato in modo naturale, usiamo terminate() (soluzione estrema)
                 if self.recorder_thread.isRunning():
                     self.recorder_thread.terminate()
                     print("[Controller] QTimer: thread terminato forzatamente.")
@@ -122,6 +118,7 @@ class SpeechRecorderController(QObject):
 
         print("[Controller] Avviando la registrazione...")
         self.recorder_thread = SpeechRecorderThread()
+        # Salviamo la next action passata
         self.recorder_thread.next_action_name = next_action_name
         self.recorder_thread.finished.connect(self.on_recording_finished)
         self.recorder_thread.start()
@@ -130,7 +127,7 @@ class SpeechRecorderController(QObject):
         state["recording"] = True  # Aggiorna lo stato globale
         self.recording_state_changed.emit(self.is_recording)
 
-    def stop_capture(self):
+    def stop_capture(self, trigger_next=True):
         print("[Controller] Fermando la registrazione...")
         if self.recorder_thread:
             self.recorder_thread.stop()
@@ -142,10 +139,14 @@ class SpeechRecorderController(QObject):
         self.is_recording = False
         state["recording"] = False  # Aggiorna lo stato globale
         self.recording_state_changed.emit(self.is_recording)
+        if trigger_next and self.recorder_thread:
+            next_act = getattr(self.recorder_thread, "next_action_name", None)
+            if next_act:
+                from fastchain.manager import FastChainManager
+                FastChainManager.run_action(next_act, state["speech_text"])
 
     def on_recording_finished(self, text):
-        global global_speech_text
-        global_speech_text = text
+        state["speech_text"] = text
         print(f"[DEBUG] Testo acquisito: {text}")
         self.is_recording = False
         state["recording"] = False  # Aggiorna lo stato globale
@@ -165,7 +166,6 @@ class CaptureSpeechSingleton:
 
 def trigger_next_action(speech_text, next_action_name):
     from fastchain.manager import FastChainManager
-
     next_action = FastChainManager.run_action(next_action_name, speech_text)
     if next_action:
         print(f"[MANAGER] Esecuzione azione successiva: {next_action_name}")
@@ -178,17 +178,18 @@ def trigger_next_action(speech_text, next_action_name):
 
 def create_toggle_button():
     from PyQt5.QtWidgets import QPushButton
-
     controller = CaptureSpeechSingleton.get_controller()
     button = QPushButton("Avvia Registrazione")
 
     def on_click():
         if state["recording"]:
-            controller.stop_capture()
+            # Quando il toggle ferma la registrazione, usiamo stop_capture_action
+            result = stop_capture_action()
             button.setText("Avvia Registrazione")
-            print("[UI] Registrazione fermata tramite bottone toggle.")
+            print("[UI] Registrazione fermata tramite bottone toggle. Result:", result)
+            # La next action viene già lanciata in stop_capture se trigger_next=True
         else:
-            controller.start_capture()
+            controller.start_capture()  # Puoi passare qui il nome della next action se desideri
             button.setText("Stop Registrazione")
             print("[UI] Registrazione avviata tramite bottone toggle.")
 
@@ -202,8 +203,39 @@ def start_capture_action(next_action_name=None):
 
 
 def stop_capture_action():
-    CaptureSpeechSingleton.get_controller().stop_capture()
+    controller = CaptureSpeechSingleton.get_controller()
+    # Chiamiamo stop_capture SENZA triggerare la next action automaticamente
+    # (in questo caso il toggle gestisce il trigger)
+    controller.stop_capture(trigger_next=False)
     print("[ACTION] stop_capture_action eseguita.")
+    from PyQt5.QtCore import QEventLoop, QTimer
+    loop = QEventLoop()
+    result = None
+
+    def on_finished(text):
+        nonlocal result
+        result = text
+        loop.quit()
+
+    if controller.recorder_thread is not None:
+        controller.recorder_thread.finished.connect(on_finished)
+
+    QTimer.singleShot(5000, loop.quit)
+    loop.exec_()
+
+    if (result is None and controller.recorder_thread is not None and 
+            not controller.recorder_thread.isFinished()):
+        print("[DEBUG] Thread non terminato entro il timeout, forzo terminate().")
+        controller.recorder_thread.terminate()
+        controller.recorder_thread.wait(1000)
+        result = state["speech_text"]
+
+    print("[DEBUG] Result from thread:", result)
+    return result
+
+
+def test_print_output(input):
+    print("[DEBUG] Testo registrato:", input)
 
 
 WIDGET_TOGGLE_CAPTURE = Action(
@@ -236,14 +268,19 @@ START_CAPTURE = Action(
 
 STOP_CAPTURE = Action(
     name="STOP_CAPTURE",
-    description="Ferma la registrazione vocale.",
+    description="Ferma la registrazione vocale e restituisce il testo registrato.",
     verbose_name="Ferma Registrazione",
     steps=[
         {
             "function": stop_capture_action,
             "input_type": None,
+            "output_type": str,
+        },
+        {
+            "function": test_print_output,
+            "input_type": str,
             "output_type": None,
-        }
+        },
     ],
     input_action=False,
 )
