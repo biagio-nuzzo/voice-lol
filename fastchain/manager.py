@@ -6,9 +6,11 @@ class FastChainManager:
     """Gestisce l'esecuzione delle actions di FastChain."""
 
     @staticmethod
-    def get_available_actions():
-        """Restituisce una lista di dizionari contenenti 'name', 'description' e 'verbose_name'
-        per ogni action registrata."""
+    def get_available_actions(exclude_core=True):
+        """
+        Restituisce una lista di dizionari contenenti 'name', 'description' e 'verbose_name'
+        per ogni action registrata. Se 'exclude_core' è True, le action con core=True vengono escluse.
+        """
         return [
             {
                 "name": action.name,
@@ -16,6 +18,7 @@ class FastChainManager:
                 "verbose_name": action.verbose_name,
             }
             for action in ACTION_REGISTRY.values()
+            if not (exclude_core and getattr(action, "core", False))
         ]
 
     @staticmethod

@@ -20,6 +20,7 @@ GET_KEYBOARD_INPUT = Action(
     name="GET_KEYBOARD_INPUT",
     description="Acquisisce un input dall'utente via tastiera e lo restituisce.",
     verbose_name="Input da Tastiera",
+    core=True,
     steps=[
         {
             "function": GetKeyboardInputAction().execute,

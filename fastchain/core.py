@@ -33,12 +33,14 @@ class Action:
         verbose_name: str,
         steps: List[Union[ActionStep, dict]],
         input_action: bool = False,
+        core: bool = False,
         stepBuilder: Type[ActionStep] = ActionStep,
     ):
         self.name = name
         self.description = description
         self.verbose_name = verbose_name
         self.input_action = input_action
+        self.core = core
         self.stepBuilder = stepBuilder
 
         # Convertiamo gli step in oggetti ActionStep se non lo sono già

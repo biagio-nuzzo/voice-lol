@@ -1,6 +1,5 @@
 # Actions Core
 from actions.core.get_keyboard_input import GET_KEYBOARD_INPUT
-from actions.core.print_value import PRINT_VALUE
 from actions.core.capture_speech.capture_speech_actions import (
     START_CAPTURE,
     STOP_CAPTURE,

@@ -79,6 +79,7 @@ WIDGET_TOGGLE_CAPTURE = Action(
     name="WIDGET_TOGGLE_CAPTURE",
     description="Restituisce un widget (pulsante) che permette di attivare/disattivare la registrazione.",
     verbose_name="Pulsante Toggle Registrazione",
+    core=True,
     steps=[
         {
             "function": create_toggle_button,
@@ -93,6 +94,7 @@ START_CAPTURE = Action(
     name="START_CAPTURE",
     description="Avvia la registrazione vocale.",
     verbose_name="Avvia Registrazione",
+    core=True,
     steps=[
         {
             "function": start_capture_action,
@@ -107,6 +109,7 @@ STOP_CAPTURE = Action(
     name="STOP_CAPTURE",
     description="Ferma la registrazione vocale e restituisce il testo registrato.",
     verbose_name="Ferma Registrazione",
+    core=True,
     steps=[
         {
             "function": stop_capture_action,
