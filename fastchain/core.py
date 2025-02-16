@@ -111,20 +111,31 @@ class Action:
                 continue
 
             try:
-                print(f"[STEP] Esecuzione: {step.function} con input: {data}")
+                output_str = str(data)
+                if len(output_str) > 200:
+                    output_str = output_str[:200] + "..."
+                print(f"[STEP] Esecuzione: {step.function} con input: {output_str}")
                 if step.thread:
                     print("[STEP] Esecuzione in thread separato...")
                     data = self._execute_step_async(step, data)
                 else:
                     print("[STEP] Esecuzione in thread principale...")
                     data = function() if step.input_type is None else function(data)
-                print(f"[STEP] Output: {data}")
+
+                # Tronca l'output a massimo 200 caratteri
+                output_str = str(data)
+                if len(output_str) > 200:
+                    output_str = output_str[:200] + "..."
+                print(f"[STEP] Output: {output_str}")
             except Exception as e:
                 print(f"[ERROR] Errore eseguendo {step.function}: {e}")
                 state["action_is_running"] = False
                 return None
-
-        print(f"[EXEC] Fine esecuzione action: {self.name} - Risultato: {data}\n")
+        # truncate the output to a maximum of 200 characters
+        output_str = str(data)
+        if len(output_str) > 200:
+            output_str = output_str[:200] + "..."
+        print(f"[EXEC] Fine esecuzione action: {self.name} - Risultato: {output_str}\n")
         state["action_is_running"] = False
         return data
 
