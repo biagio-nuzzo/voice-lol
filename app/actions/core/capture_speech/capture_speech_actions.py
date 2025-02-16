@@ -13,28 +13,6 @@ from app.actions.core.capture_speech.capture_speech_controller import (
 )
 
 
-def create_toggle_button():
-    from PyQt5.QtWidgets import QPushButton
-
-    controller = CaptureSpeechSingleton.get_controller()
-    button = QPushButton("Avvia Registrazione")
-
-    def on_click():
-        if state["recording"]:
-            # Se la registrazione è attiva, fermiamo e otteniamo il risultato tramite stop_capture_action
-            result = stop_capture_action()
-            button.setText("Avvia Registrazione")
-            print("[UI] Registrazione fermata tramite toggle. Result:", result)
-        else:
-            # Qui passiamo obbligatoriamente la next action, ad es. "MY_NEXT_ACTION"
-            controller.start_capture("MY_NEXT_ACTION")
-            button.setText("Stop Registrazione")
-            print("[UI] Registrazione avviata tramite toggle.")
-
-    button.clicked.connect(on_click)
-    return button
-
-
 def start_capture_action(next_action):
     # next_action DEVE essere passato, altrimenti verrà sollevato un errore
     CaptureSpeechSingleton.get_controller().start_capture(next_action)
@@ -74,21 +52,6 @@ def stop_capture_action():
     print("[DEBUG] Result from thread:", result)
     return result
 
-
-WIDGET_TOGGLE_CAPTURE = Action(
-    name="WIDGET_TOGGLE_CAPTURE",
-    description="Restituisce un widget (pulsante) che permette di attivare/disattivare la registrazione.",
-    verbose_name="Pulsante Toggle Registrazione",
-    core=True,
-    steps=[
-        {
-            "function": create_toggle_button,
-            "input_type": None,
-            "output_type": "QWidget",
-        }
-    ],
-    input_action=False,
-)
 
 START_CAPTURE = Action(
     name="START_CAPTURE",

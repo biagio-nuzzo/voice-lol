@@ -26,6 +26,8 @@ from app.actions.core.capture_speech.capture_speech_controller import (
 # Emit Stream
 from app.ui.emit_stream import EmittingStream
 
+from fastchain.manager import FastChainManager
+
 # Costanti di configurazione
 BACKGROUND_COLOR = "#505050"  # Sfondo principale
 FONT_FAMILY = "'Segoe UI', sans-serif"
@@ -127,6 +129,10 @@ class MainUI(QWidget):
         self.button_record = QPushButton("Avvia Registrazione", self)
         self.button_record.clicked.connect(self.toggle_recording)
 
+        # Pulsante "Interroga"
+        self.button_text_input = QPushButton("Interroga", self)
+        self.button_text_input.clicked.connect(self.start_agent_manual)
+
         # Creazione del QLabel per la gif
         self.label_gif = QLabel(self)
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -150,6 +156,14 @@ class MainUI(QWidget):
         self.action_status_label = QLabel("Nessuna azione in esecuzione", self)
         self.action_status_label.setStyleSheet("color: #c7c7c7; font-weight: bold;")
 
+    def start_agent_manual(self):
+        """
+        Gestisce l'input testuale.
+        """
+        FastChainManager.run_action(
+            "START_AGENT_MANUAL",
+        )
+
     def setup_layout(self):
         """
         Organizza i componenti in layout.
@@ -157,6 +171,7 @@ class MainUI(QWidget):
         h_layout = QHBoxLayout()
         h_layout.addWidget(self.button_record)
         h_layout.addWidget(self.label_gif)
+        h_layout.addWidget(self.button_text_input)
 
         main_layout = QVBoxLayout()
         main_layout.addLayout(h_layout)
@@ -203,7 +218,7 @@ class MainUI(QWidget):
         """
         Aggiorna lo stato della UI:
         - Modifica il testo del pulsante e l'animazione della gif in base allo stato di registrazione.
-        - Disabilita il pulsante se la registrazione non è attiva e un'azione è in esecuzione.
+        - Disabilita i pulsanti se un'azione è in corso.
         - Aggiorna l'indicatore di azione in esecuzione.
         """
         if state["recording"]:
@@ -223,8 +238,10 @@ class MainUI(QWidget):
             self.movie.setPaused(True)
             self.opacity_effect.setOpacity(GIF_OPACITY_INACTIVE)
 
-        # Aggiorna l'indicatore di azione in esecuzione
+        # Disabilita il pulsante "Interroga" se un'azione è in corso
         if state.get("action_is_running", False):
+            self.button_text_input.setEnabled(False)
             self.action_status_label.setText("⏳ Azione in esecuzione...")
         else:
+            self.button_text_input.setEnabled(True)
             self.action_status_label.setText("Nessuna azione in esecuzione")
