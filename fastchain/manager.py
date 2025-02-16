@@ -25,10 +25,8 @@ class FastChainManager:
     def run_action(action_name: str, input_data: Any = None):
         """Esegue un'azione se esiste nel registro."""
         action = ACTION_REGISTRY.get(action_name)
-
         if not action:
             print(f"[ERROR] Action '{action_name}' non trovata nel registro!")
             return None
-
         print(f"\n[MANAGER] Avvio action '{action_name}'...")
         return action.execute(input_data)

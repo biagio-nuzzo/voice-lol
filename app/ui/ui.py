@@ -4,7 +4,6 @@ import os
 
 # PyQt
 from PyQt5.QtWidgets import (
-    QApplication,
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
@@ -24,7 +23,7 @@ from app.actions.core.capture_speech.capture_speech_controller import (
     CaptureSpeechSingleton,
 )
 
-# Emitting Stream
+# Emit Stream
 from app.ui.emit_stream import EmittingStream
 
 # Costanti di configurazione
@@ -56,7 +55,7 @@ class MainUI(QWidget):
         self.setup_stylesheet()
         self.setup_components()
         self.setup_layout()
-        self.setup_redirect()
+        self.setup_redirect()  # Se non necessiti di reindirizzare stdout/stderr
         self.setup_timer()
         self.resize(WINDOW_WIDTH, WINDOW_HEIGHT)
         self.setWindowTitle("Registratore Vocale")
@@ -122,17 +121,14 @@ class MainUI(QWidget):
 
         # Creazione del QLabel per la gif
         self.label_gif = QLabel(self)
-        # Costruzione del percorso assoluto della gif
         current_dir = os.path.dirname(os.path.realpath(__file__))
         gif_path = os.path.join(current_dir, GIF_RELATIVE_PATH)
         self.movie = QMovie(gif_path)
         if not self.movie.isValid():
             print("La gif non è stata caricata correttamente:", gif_path)
         self.label_gif.setMovie(self.movie)
-        # Avvio della gif per mostrare il primo frame, quindi pausa
         self.movie.start()
         self.movie.setPaused(True)
-        # Impostazione dell'effetto opacità per la gif
         self.opacity_effect = QGraphicsOpacityEffect()
         self.opacity_effect.setOpacity(GIF_OPACITY_INACTIVE)
         self.label_gif.setGraphicsEffect(self.opacity_effect)
@@ -142,29 +138,24 @@ class MainUI(QWidget):
         self.console_output.setReadOnly(True)
         self.console_output.setPlaceholderText("Output del terminale...")
 
+        # Nuovo QLabel per indicare se un'azione è in corso
+        self.action_status_label = QLabel("Nessuna azione in esecuzione", self)
+        self.action_status_label.setStyleSheet("color: yellow; font-weight: bold;")
+
     def setup_layout(self):
         """
         Organizza i componenti in layout.
         """
-        # Layout orizzontale per il pulsante e la gif
         h_layout = QHBoxLayout()
         h_layout.addWidget(self.button_record)
         h_layout.addWidget(self.label_gif)
 
-        # Layout principale con il terminale sotto
         main_layout = QVBoxLayout()
         main_layout.addLayout(h_layout)
+        # Inseriamo l'indicatore di azione in corso sopra il terminale
+        main_layout.addWidget(self.action_status_label)
         main_layout.addWidget(self.console_output)
         self.setLayout(main_layout)
-
-    def setup_redirect(self):
-        """
-        Reindirizza stdout e stderr verso il QTextEdit.
-        """
-        self.stdout_stream = EmittingStream()
-        self.stdout_stream.textWritten.connect(self.append_console_text)
-        sys.stdout = self.stdout_stream
-        sys.stderr = self.stdout_stream
 
     def setup_timer(self):
         """
@@ -191,10 +182,19 @@ class MainUI(QWidget):
         else:
             self.controller.start_capture("START_AGENT")
 
+    def setup_redirect(self):
+        """
+        Reindirizza stdout e stderr verso il QTextEdit.
+        """
+        self.stdout_stream = EmittingStream()
+        self.stdout_stream.textWritten.connect(self.append_console_text)
+        sys.stdout = self.stdout_stream
+        sys.stderr = self.stdout_stream
+
     def update_ui_state(self):
         """
-        Aggiorna lo stato della UI (testo del pulsante, animazione e opacità della gif)
-        in base allo stato di registrazione.
+        Aggiorna lo stato della UI: modifica il testo del pulsante, l'animazione della gif e
+        mostra un indicatore quando un'azione è in esecuzione.
         """
         if state["recording"]:
             self.button_record.setText("Stop Registrazione")
@@ -206,3 +206,9 @@ class MainUI(QWidget):
             self.button_record.setText("Avvia Registrazione")
             self.movie.setPaused(True)
             self.opacity_effect.setOpacity(GIF_OPACITY_INACTIVE)
+
+        # Aggiorna l'indicatore di azione in esecuzione
+        if state.get("action_is_running", False):
+            self.action_status_label.setText("⏳ Azione in esecuzione...")
+        else:
+            self.action_status_label.setText("Nessuna azione in esecuzione")

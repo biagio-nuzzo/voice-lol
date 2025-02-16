@@ -42,7 +42,12 @@ TEXT_TO_AUDIO = Action(
     verbose_name="Testo in Audio",
     core=True,
     steps=[
-        {"function": TextToAudioAction().execute, "input_type": str, "output_type": str}
+        {
+            "function": TextToAudioAction().execute,
+            "input_type": str,
+            "output_type": str,
+            "thread": True,
+        }
     ],
     input_action=False,
 )

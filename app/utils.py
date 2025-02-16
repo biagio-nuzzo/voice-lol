@@ -8,7 +8,7 @@ import simpleaudio as sa
 
 # Funzione per riprodurre l'audio
 def play_audio(audio_file):
-    print(f"▶️ Riproduzione audio: {audio_file}")
+    print(f"Riproduzione audio: {audio_file}")
     wave_obj = sa.WaveObject.from_wave_file(audio_file)
     play_obj = wave_obj.play()
     play_obj.wait_done()

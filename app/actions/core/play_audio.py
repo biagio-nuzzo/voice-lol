@@ -22,7 +22,12 @@ PLAY_AUDIO = Action(
     verbose_name="Riproduzione Audio",
     core=True,
     steps=[
-        {"function": PlayAudioAction().execute, "input_type": str, "output_type": str}
+        {
+            "function": PlayAudioAction().execute,
+            "input_type": str,
+            "output_type": str,
+            "thread": True,
+        }
     ],
     input_action=False,
 )

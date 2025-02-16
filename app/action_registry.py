@@ -9,10 +9,10 @@ from app.actions.core.get_action import GET_ACTION
 from app.actions.core.run_action import RUN_ACTION
 from app.actions.core.text_to_audio.text_to_audio import TEXT_TO_AUDIO
 from app.actions.core.play_audio import PLAY_AUDIO
+from app.actions.core.start_agent import START_AGENT
 
 # Actions Custom
 from app.actions.custom.print_value import PRINT_VALUE
-from app.actions.custom.start_agent import START_AGENT
 from app.actions.custom.generate_speech import GENERATE_SPEECH
 
 
