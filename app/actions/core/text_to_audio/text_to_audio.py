@@ -1,15 +1,15 @@
+# FastChain
+from fastchain.core import Action
+
 # TTS Modules
-from tts_modules.tts_tts import generate_audio_tts
-from tts_modules.bark_tts import generate_audio_bark
+from app.actions.core.text_to_audio.tts_modules.tts_tts import generate_audio_tts
+from app.actions.core.text_to_audio.tts_modules.bark_tts import generate_audio_bark
 
 # Utils
 from app.utils import clean_text_for_tts
 
 # Settings
 from settings import TTS_MODEL
-
-# Import della nuova Action dal framework
-from fastchain.core import Action
 
 
 class TextToAudioAction:

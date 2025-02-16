@@ -47,5 +47,5 @@ def generate_audio_tts(text: str, filename: str):
         noise_w=0.1,  # Mantiene una voce più pulita
         length_scale=1.2,  # Mantiene un ritmo naturale
     )
-    print(f"✔️ Audio salvato: {output_path}")
+    print(f"Audio salvato: {output_path}")
     return output_path

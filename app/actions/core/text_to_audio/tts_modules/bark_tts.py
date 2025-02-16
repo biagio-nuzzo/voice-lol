@@ -47,5 +47,5 @@ def generate_audio_bark(text: str, filename: str):
     # Salva il file WAV in alta qualità (32-bit float)
     wav.write(output_path, rate=24000, data=(audio_array * 32767).astype(np.int16))
 
-    print(f"✔️ Audio salvato: {output_path}")
+    print(f"Audio salvato: {output_path}")
     return output_path
