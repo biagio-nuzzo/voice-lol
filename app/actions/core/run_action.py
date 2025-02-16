@@ -20,6 +20,10 @@ RUN_ACTION = Action(
     verbose_name="Esecuzione Azione",
     core=True,
     steps=[
-        {"function": RunActionAction().execute, "input_type": str, "output_type": str}
+        {
+            "function": RunActionAction().execute,
+            "input_type": str,
+            "output_type": str,
+        }
     ],
 )

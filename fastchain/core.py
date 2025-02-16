@@ -64,7 +64,6 @@ class Action:
         steps: List[Union[ActionStep, dict]],
         input_action: bool = False,
         core: bool = False,
-        thread: bool = False,  # Se True, l'intera action viene eseguita in un thread (non consigliato per catene sequenziali)
         stepBuilder: Type[ActionStep] = ActionStep,
     ):
         self.name = name
@@ -72,7 +71,6 @@ class Action:
         self.verbose_name = verbose_name
         self.input_action = input_action
         self.core = core
-        self.thread = thread
         self.stepBuilder = stepBuilder
 
         # Convertiamo gli step in oggetti ActionStep se non lo sono già
@@ -115,8 +113,10 @@ class Action:
             try:
                 print(f"[STEP] Esecuzione: {step.function} con input: {data}")
                 if step.thread:
+                    print("[STEP] Esecuzione in thread separato...")
                     data = self._execute_step_async(step, data)
                 else:
+                    print("[STEP] Esecuzione in thread principale...")
                     data = function() if step.input_type is None else function(data)
                 print(f"[STEP] Output: {data}")
             except Exception as e:

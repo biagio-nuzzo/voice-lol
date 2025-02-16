@@ -11,7 +11,7 @@ class PlayAudioAction:
     """
 
     def execute(self, audio_file: str) -> str:
-        print(f"▶️ Riproduzione audio: {audio_file}")
+        print(f"Riproduzione audio: {audio_file}")
         play_audio(audio_file)
         return "Audio riprodotto"
 

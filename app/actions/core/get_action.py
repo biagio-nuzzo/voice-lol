@@ -7,8 +7,6 @@ from settings import API_URL, GEMMA
 # Import della nuova Action dal framework
 from fastchain.core import Action
 
-from time import sleep
-
 
 class GetAction:
     """
@@ -57,8 +55,6 @@ class GetAction:
 
         response = requests.post(API_URL, json=payload)
 
-        print("ASPETTO PER VEDERE SE FRIZZA LA UI")
-        sleep(10)
         if response.status_code == 200:
             data = response.json()["choices"][0]["text"]
             match = re.search(r'\{\s*"action"\s*:\s*"(.*?)"\s*\}', data)
