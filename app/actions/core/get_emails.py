@@ -1,9 +1,13 @@
-# FastChain
-from fastchain.core import Action
-from dotenv import load_dotenv
+# Built-in
 import os
 import imaplib
 import email
+
+# FastChain
+from fastchain.core import Action
+
+# Env
+from dotenv import load_dotenv
 
 
 class GetUnreadEmailsAction:
