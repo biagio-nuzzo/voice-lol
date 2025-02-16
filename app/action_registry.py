@@ -15,16 +15,15 @@ from app.actions.core.get_emails import GET_UNREAD_EMAILS
 from app.actions.core.show_output import SHOW_OUTPUT
 
 # Actions Custom
-from app.actions.custom.print_value import PRINT_VALUE
 from app.actions.custom.generate_speech import GENERATE_SPEECH
 from app.actions.custom.send_email_manual import SEND_EMAIL_MANUAL
+from app.actions.custom.get_unread_emails import GET_UNREAD_EMAIL_LIST
 
 
 # Dizionario che mappa tutte le Action disponibili
 ACTION_REGISTRY = {
     # Core
     "GET_KEYBOARD_INPUT": GET_KEYBOARD_INPUT,
-    "PRINT_VALUE": PRINT_VALUE,
     "START_CAPTURE": START_CAPTURE,
     "STOP_CAPTURE": STOP_CAPTURE,
     "WIDGET_TOGGLE_CAPTURE": WIDGET_TOGGLE_CAPTURE,
@@ -35,9 +34,9 @@ ACTION_REGISTRY = {
     "SEND_EMAIL": SEND_EMAIL,
     "GET_UNREAD_EMAILS": GET_UNREAD_EMAILS,
     "SHOW_OUTPUT": SHOW_OUTPUT,
-    # Custom
-    "PRINT_VALUE": PRINT_VALUE,
     "START_AGENT": START_AGENT,
+    # Custom
     "GENERATE_SPEECH": GENERATE_SPEECH,
     "SEND_EMAIL_MANUAL": SEND_EMAIL_MANUAL,
+    "GET_UNREAD_EMAIL_LIST": GET_UNREAD_EMAIL_LIST,
 }
