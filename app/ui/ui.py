@@ -101,7 +101,7 @@ class MainUI(QWidget):
             /* Personalizzazione della scrollbar verticale per QTextEdit */
             QTextEdit QScrollBar:vertical {{
                 background: {SCROLLBAR_BG_COLOR};
-                width: 8px;
+                width: 3px;
                 margin: 0px;
             }}
             QTextEdit QScrollBar::handle:vertical {{
