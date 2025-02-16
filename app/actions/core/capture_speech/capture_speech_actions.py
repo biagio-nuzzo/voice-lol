@@ -85,7 +85,6 @@ WIDGET_TOGGLE_CAPTURE = Action(
             "function": create_toggle_button,
             "input_type": None,
             "output_type": "QWidget",
-            "thread": True,
         }
     ],
     input_action=False,
@@ -101,7 +100,6 @@ START_CAPTURE = Action(
             "function": start_capture_action,
             "input_type": str,
             "output_type": None,
-            "thread": True,
         }
     ],
     input_action=True,
@@ -117,7 +115,6 @@ STOP_CAPTURE = Action(
             "function": stop_capture_action,
             "input_type": None,
             "output_type": str,
-            "thread": True,
         }
     ],
     input_action=False,

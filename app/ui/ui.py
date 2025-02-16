@@ -32,6 +32,9 @@ FONT_FAMILY = "'Segoe UI', sans-serif"
 FONT_SIZE = "12pt"
 BUTTON_BG_COLOR = "#222324"
 BUTTON_HOVER_COLOR = "#1b1c1d"
+# Stile per il pulsante disabilitato
+BUTTON_DISABLED_BG_COLOR = "#333333"
+BUTTON_DISABLED_TEXT_COLOR = "#888888"
 TEXTEDIT_BG_COLOR = "#353535"
 TEXTEDIT_TEXT_COLOR = "#e0e0e0"
 SCROLLBAR_BG_COLOR = "#2e2e2e"
@@ -58,7 +61,7 @@ class MainUI(QWidget):
         self.setup_redirect()  # Se non necessiti di reindirizzare stdout/stderr
         self.setup_timer()
         self.resize(WINDOW_WIDTH, WINDOW_HEIGHT)
-        self.setWindowTitle("Registratore Vocale")
+        self.setWindowTitle("FastChain - AI Agent Framework")
 
     def setup_stylesheet(self):
         """
@@ -80,6 +83,11 @@ class MainUI(QWidget):
             }}
             QPushButton:hover {{
                 background-color: {BUTTON_HOVER_COLOR};
+            }}
+            QPushButton:disabled {{
+                background-color: {BUTTON_DISABLED_BG_COLOR};
+                color: {BUTTON_DISABLED_TEXT_COLOR};
+                cursor: not-allowed;
             }}
             QTextEdit {{
                 background-color: {TEXTEDIT_BG_COLOR};
@@ -138,9 +146,9 @@ class MainUI(QWidget):
         self.console_output.setReadOnly(True)
         self.console_output.setPlaceholderText("Output del terminale...")
 
-        # Nuovo QLabel per indicare se un'azione è in corso
+        # Nuovo QLabel per indicare se un'azione è in esecuzione
         self.action_status_label = QLabel("Nessuna azione in esecuzione", self)
-        self.action_status_label.setStyleSheet("color: yellow; font-weight: bold;")
+        self.action_status_label.setStyleSheet("color: #c7c7c7; font-weight: bold;")
 
     def setup_layout(self):
         """
@@ -193,17 +201,25 @@ class MainUI(QWidget):
 
     def update_ui_state(self):
         """
-        Aggiorna lo stato della UI: modifica il testo del pulsante, l'animazione della gif e
-        mostra un indicatore quando un'azione è in esecuzione.
+        Aggiorna lo stato della UI:
+        - Modifica il testo del pulsante e l'animazione della gif in base allo stato di registrazione.
+        - Disabilita il pulsante se la registrazione non è attiva e un'azione è in esecuzione.
+        - Aggiorna l'indicatore di azione in esecuzione.
         """
         if state["recording"]:
             self.button_record.setText("Stop Registrazione")
+            self.button_record.setEnabled(True)
             if self.movie.state() != QMovie.Running:
                 self.movie.start()
             self.movie.setPaused(False)
             self.opacity_effect.setOpacity(GIF_OPACITY_ACTIVE)
         else:
             self.button_record.setText("Avvia Registrazione")
+            # Disabilita il pulsante se un'azione è in corso
+            if state.get("action_is_running", False):
+                self.button_record.setEnabled(False)
+            else:
+                self.button_record.setEnabled(True)
             self.movie.setPaused(True)
             self.opacity_effect.setOpacity(GIF_OPACITY_INACTIVE)
 
