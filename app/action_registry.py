@@ -11,6 +11,7 @@ from app.actions.core.text_to_audio.text_to_audio import TEXT_TO_AUDIO
 from app.actions.core.play_audio import PLAY_AUDIO
 from app.actions.core.start_agent import START_AGENT
 from app.actions.core.send_email import SEND_EMAIL
+from app.actions.core.get_emails import GET_UNREAD_EMAILS
 
 # Actions Custom
 from app.actions.custom.print_value import PRINT_VALUE
@@ -31,6 +32,7 @@ ACTION_REGISTRY = {
     "TEXT_TO_AUDIO": TEXT_TO_AUDIO,
     "PLAY_AUDIO": PLAY_AUDIO,
     "SEND_EMAIL": SEND_EMAIL,
+    "GET_UNREAD_EMAILS": GET_UNREAD_EMAILS,
     # Custom
     "PRINT_VALUE": PRINT_VALUE,
     "START_AGENT": START_AGENT,
