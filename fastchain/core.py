@@ -49,6 +49,12 @@ class Action:
             for step in steps
         ]
 
+    def get_steps(self) -> List[ActionStep]:
+        """
+        Restituisce la lista degli steps dell'Action.
+        """
+        return self.steps
+
     def execute(self, input_data: Any = None) -> Any:
         """Esegue gli step in sequenza, mostrando input, output ed eventuali errori."""
         print(f"\n[EXEC] Inizio esecuzione action: {self.name}")

@@ -1,13 +1,16 @@
 # Actions Core
-from actions.core.get_keyboard_input import GET_KEYBOARD_INPUT
-from actions.core.capture_speech.capture_speech_actions import (
+from app.actions.core.get_keyboard_input import GET_KEYBOARD_INPUT
+from app.actions.core.capture_speech.capture_speech_actions import (
     START_CAPTURE,
     STOP_CAPTURE,
     WIDGET_TOGGLE_CAPTURE,
 )
+from app.actions.core.get_action import GET_ACTION
+from app.actions.core.run_action import RUN_ACTION
 
 # Actions Custom
-from actions.custom.print_value import PRINT_VALUE
+from app.actions.custom.print_value import PRINT_VALUE
+from app.actions.custom.start_agent import START_AGENT
 
 
 # Dizionario che mappa tutte le Action disponibili
@@ -18,6 +21,9 @@ ACTION_REGISTRY = {
     "START_CAPTURE": START_CAPTURE,
     "STOP_CAPTURE": STOP_CAPTURE,
     "WIDGET_TOGGLE_CAPTURE": WIDGET_TOGGLE_CAPTURE,
+    "GET_ACTION": GET_ACTION,
+    "RUN_ACTION": RUN_ACTION,
     # Custom
     "PRINT_VALUE": PRINT_VALUE,
+    "START_AGENT": START_AGENT,
 }

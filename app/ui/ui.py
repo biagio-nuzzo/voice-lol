@@ -189,7 +189,7 @@ class MainUI(QWidget):
         if state["recording"]:
             self.controller.stop_capture()
         else:
-            self.controller.start_capture("PRINT_VALUE")
+            self.controller.start_capture("START_AGENT")
 
     def update_ui_state(self):
         """
