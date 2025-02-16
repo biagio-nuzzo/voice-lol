@@ -10,6 +10,7 @@ from app.actions.core.run_action import RUN_ACTION
 from app.actions.core.text_to_audio.text_to_audio import TEXT_TO_AUDIO
 from app.actions.core.play_audio import PLAY_AUDIO
 from app.actions.core.start_agent import START_AGENT
+from app.actions.core.send_email import SEND_EMAIL
 
 # Actions Custom
 from app.actions.custom.print_value import PRINT_VALUE
@@ -28,6 +29,7 @@ ACTION_REGISTRY = {
     "RUN_ACTION": RUN_ACTION,
     "TEXT_TO_AUDIO": TEXT_TO_AUDIO,
     "PLAY_AUDIO": PLAY_AUDIO,
+    "SEND_EMAIL": SEND_EMAIL,
     # Custom
     "PRINT_VALUE": PRINT_VALUE,
     "START_AGENT": START_AGENT,
