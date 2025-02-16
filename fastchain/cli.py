@@ -4,6 +4,7 @@ import os
 import zipfile
 import subprocess
 import ast
+from PyQt5.QtWidgets import QApplication
 
 # FastChain
 from fastchain.manager import FastChainManager  # Assicurati che il path sia corretto
@@ -109,6 +110,11 @@ def main():
         delete_pycaches()
 
     elif command == "test":
+
+        # Assicurati che venga creata un'istanza di QApplication
+        if QApplication.instance() is None:
+            app = QApplication(sys.argv)
+
         # Testa un'azione presente nel registro
         if len(sys.argv) < 3:
             print(
@@ -120,23 +126,14 @@ def main():
         # Gestione dell'input opzionale: se fornito, lo interpreta come stringa o valore Python
         input_data = None
         if len(sys.argv) > 3:
-            # Prova a interpretare il parametro come literal Python (ad es. dict, list, int, ecc.)
             try:
                 input_data = ast.literal_eval(" ".join(sys.argv[3:]))
             except Exception:
-                # Se fallisce, usa la stringa grezza
                 input_data = " ".join(sys.argv[3:])
 
         manager = FastChainManager()
         result = manager.run_action(action_name, input_data)
         print("Risultato:", result)
-
-    else:
-        print(f"Errore: Comando sconosciuto '{command}'")
-        print(
-            "Usa 'fastchain run app' per avviare l'applicazione, 'fastchain zip' per creare un archivio, 'fastchain clean' per eliminare __pycache__ o 'fastchain test <ACTION_NAME> [input]' per testare un'action."
-        )
-        sys.exit(1)
 
 
 if __name__ == "__main__":

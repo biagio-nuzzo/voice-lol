@@ -12,6 +12,7 @@ from app.actions.core.play_audio import PLAY_AUDIO
 from app.actions.core.start_agent import START_AGENT
 from app.actions.core.send_email import SEND_EMAIL
 from app.actions.core.get_emails import GET_UNREAD_EMAILS
+from app.actions.core.show_output import SHOW_OUTPUT
 
 # Actions Custom
 from app.actions.custom.print_value import PRINT_VALUE
@@ -33,6 +34,7 @@ ACTION_REGISTRY = {
     "PLAY_AUDIO": PLAY_AUDIO,
     "SEND_EMAIL": SEND_EMAIL,
     "GET_UNREAD_EMAILS": GET_UNREAD_EMAILS,
+    "SHOW_OUTPUT": SHOW_OUTPUT,
     # Custom
     "PRINT_VALUE": PRINT_VALUE,
     "START_AGENT": START_AGENT,
