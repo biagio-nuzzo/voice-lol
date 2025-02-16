@@ -7,7 +7,7 @@ import scipy.io.wavfile as wav
 import torch
 
 # Settings
-from settings import OVERWRITE, SPEECHES_DIR
+from app.settings import OVERWRITE, SPEECHES_DIR
 
 # Se è disponibile la GPU MPS, usiamola
 device = "mps" if torch.backends.mps.is_available() else "cpu"

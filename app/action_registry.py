@@ -15,6 +15,7 @@ from app.actions.core.send_email import SEND_EMAIL
 # Actions Custom
 from app.actions.custom.print_value import PRINT_VALUE
 from app.actions.custom.generate_speech import GENERATE_SPEECH
+from app.actions.custom.send_email_manual import SEND_EMAIL_MANUAL
 
 
 # Dizionario che mappa tutte le Action disponibili
@@ -34,4 +35,5 @@ ACTION_REGISTRY = {
     "PRINT_VALUE": PRINT_VALUE,
     "START_AGENT": START_AGENT,
     "GENERATE_SPEECH": GENERATE_SPEECH,
+    "SEND_EMAIL_MANUAL": SEND_EMAIL_MANUAL,
 }

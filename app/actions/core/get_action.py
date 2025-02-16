@@ -2,7 +2,7 @@ import requests
 import re
 
 # Settings
-from settings import API_URL, GEMMA
+from app.settings import API_URL, GEMMA
 
 # Import della nuova Action dal framework
 from fastchain.core import Action

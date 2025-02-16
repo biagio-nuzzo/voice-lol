@@ -5,7 +5,7 @@ import os
 from TTS.api import TTS
 
 # Settings
-from settings import MODEL_DIR, TTS_MODEL_NAME, OVERWRITE, SPEECHES_DIR
+from app.settings import MODEL_DIR, TTS_MODEL_NAME, OVERWRITE, SPEECHES_DIR
 
 
 # Assicuriamoci che la cartella SPEECHES_DIR esista

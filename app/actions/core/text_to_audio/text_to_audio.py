@@ -9,7 +9,7 @@ from app.actions.core.text_to_audio.tts_modules.bark_tts import generate_audio_b
 from app.utils import clean_text_for_tts
 
 # Settings
-from settings import TTS_MODEL
+from app.settings import TTS_MODEL
 
 
 class TextToAudioAction:

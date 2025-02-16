@@ -1,7 +1,12 @@
+# Built-in
 import sys
 import os
 import zipfile
 import subprocess
+import ast
+
+# FastChain
+from fastchain.manager import FastChainManager  # Assicurati che il path sia corretto
 
 ZIP_NAME = "fastchain_project.zip"
 
@@ -79,6 +84,7 @@ def main():
         print("  run app   - Avvia l'applicazione")
         print("  zip       - Crea un archivio ZIP del progetto")
         print("  clean     - Elimina tutte le cartelle __pycache__")
+        print("  test      - Testa un'azione dal registro")
         sys.exit(1)
 
     command = sys.argv[1]
@@ -102,10 +108,33 @@ def main():
         # Cancella tutte le cartelle __pycache__ ricorsivamente
         delete_pycaches()
 
+    elif command == "test":
+        # Testa un'azione presente nel registro
+        if len(sys.argv) < 3:
+            print(
+                "Errore: Specificare il nome dell'action da testare. Es.: fastchain test SEND_EMAIL"
+            )
+            sys.exit(1)
+        action_name = sys.argv[2]
+
+        # Gestione dell'input opzionale: se fornito, lo interpreta come stringa o valore Python
+        input_data = None
+        if len(sys.argv) > 3:
+            # Prova a interpretare il parametro come literal Python (ad es. dict, list, int, ecc.)
+            try:
+                input_data = ast.literal_eval(" ".join(sys.argv[3:]))
+            except Exception:
+                # Se fallisce, usa la stringa grezza
+                input_data = " ".join(sys.argv[3:])
+
+        manager = FastChainManager()
+        result = manager.run_action(action_name, input_data)
+        print("Risultato:", result)
+
     else:
         print(f"Errore: Comando sconosciuto '{command}'")
         print(
-            "Usa 'fastchain run app' per avviare l'applicazione, 'fastchain zip' per creare un archivio, o 'fastchain clean' per eliminare __pycache__."
+            "Usa 'fastchain run app' per avviare l'applicazione, 'fastchain zip' per creare un archivio, 'fastchain clean' per eliminare __pycache__ o 'fastchain test <ACTION_NAME> [input]' per testare un'action."
         )
         sys.exit(1)
 
