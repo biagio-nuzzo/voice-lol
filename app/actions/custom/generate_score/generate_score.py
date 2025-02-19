@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import (
     QDialog,
     QVBoxLayout,
     QHBoxLayout,
+    QGridLayout,
     QLabel,
     QLineEdit,
     QPushButton,
@@ -40,23 +41,26 @@ class GenerateScoreWorker(QObject):
             ]
             print("[Worker] Note random generate:", random_notes)
 
-            # Imposta il comando della chiave in base alla selezione
+            # Imposta la chiave e la modalità relativa in base alla selezione
             if self.clef == "bass":
                 clef_command = "\\clef bass"
+                relative_mode = "\\relative c {"
             else:
                 clef_command = "\\clef treble"
+                # Per la chiave di violino (treble), al fine di ottenere note più alte,
+                # usiamo un punto di partenza più elevato (c'' invece di c')
+                relative_mode = "\\relative c'' {"
 
             # Costruisce il codice LilyPond usando le note random generate
-            # Utilizziamo la stessa base relativa in entrambi i casi (c')
             lilypond_code = f"""
-\\version "2.24.0"
-\\relative c' {{
-  {clef_command}
-  \\key c \\major
-  \\time 4/4
-  {' '.join(random_notes)}
-}}
-"""
+                \\version "2.24.0"
+                {relative_mode}
+                {clef_command}
+                \\key c \\major
+                \\time 4/4
+                {' '.join(random_notes)}
+                }}
+                """
 
             # Calcola il percorso della cartella del file corrente e della cartella "tmp"
             script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -99,11 +103,12 @@ class GenerateScoreDialog(QDialog):
         super().__init__(parent)
         print("[Dialog] Inizializzazione del dialog.")
         self.setWindowTitle("Genera Spartito")
-        self.resize(500, 600)
+        # Rimuoviamo il resize fisso per eliminare spazi vuoti inutilizzati
         self.thread = None
         self.worker = None
         self.correct_notes = None  # Note corrette generate dal worker
         self.init_ui()
+        self.adjustSize()
 
     def init_ui(self):
         print("[Dialog] Costruzione dell'interfaccia...")
@@ -111,25 +116,27 @@ class GenerateScoreDialog(QDialog):
         main_layout.setSpacing(10)
         main_layout.setContentsMargins(10, 10, 10, 10)
 
-        # Layout per gli input delle note
-        input_layout = QHBoxLayout()
-        input_layout.setSpacing(5)
+        # Layout per gli input delle note: utilizziamo un QGridLayout per una disposizione ordinata
+        grid_layout = QGridLayout()
+        grid_layout.setSpacing(5)
         self.note_edits = []
         # Validator: accetta solo una lettera (a-g o A-G)
         validator = QRegExpValidator(QRegExp("^[a-gA-G]$"))
         for i in range(note_range):
-            sub_layout = QVBoxLayout()
-            sub_layout.setSpacing(2)
             label = QLabel(f"Nota {i+1}")
+            label.setAlignment(Qt.AlignCenter)
             line_edit = QLineEdit()
             line_edit.setMaxLength(1)
             line_edit.setFixedWidth(50)
             line_edit.setValidator(validator)
-            sub_layout.addWidget(label)
-            sub_layout.addWidget(line_edit)
-            input_layout.addLayout(sub_layout)
+            # Quando viene inserito un carattere, sposta il focus sul successivo oppure valida se è l'ultimo input
+            line_edit.textChanged.connect(
+                lambda text, index=i: self.move_focus(text, index)
+            )
+            grid_layout.addWidget(label, 0, i)
+            grid_layout.addWidget(line_edit, 1, i)
             self.note_edits.append(line_edit)
-        main_layout.addLayout(input_layout)
+        main_layout.addLayout(grid_layout)
 
         # Layout per la selezione della chiave
         clef_layout = QHBoxLayout()
@@ -148,7 +155,8 @@ class GenerateScoreDialog(QDialog):
         score_layout = QVBoxLayout(self.score_frame)
         self.score_label = QLabel("Qui verrà visualizzato lo spartito")
         self.score_label.setAlignment(Qt.AlignCenter)
-        self.score_label.setMinimumSize(800, 400)
+        # Incrementata la dimensione minima per l'immagine
+        self.score_label.setMinimumSize(500, 350)
         score_layout.addWidget(self.score_label)
         main_layout.addWidget(self.score_frame)
 
@@ -168,6 +176,15 @@ class GenerateScoreDialog(QDialog):
         self.generate_button.clicked.connect(self.on_generate_clicked)
         self.send_button.clicked.connect(self.on_send_clicked)
         print("[Dialog] Interfaccia costruita con successo.")
+
+    def move_focus(self, text, index):
+        """Sposta il focus al campo successivo se è stato inserito un carattere, altrimenti avvia la validazione."""
+        if len(text) == 1:
+            if index < len(self.note_edits) - 1:
+                self.note_edits[index + 1].setFocus()
+            else:
+                # Ultimo input: avvia la validazione
+                self.on_send_clicked()
 
     def on_generate_clicked(self):
         print("[Dialog] Pulsante 'Genera Spartito' cliccato.")
@@ -203,11 +220,14 @@ class GenerateScoreDialog(QDialog):
         print("[Dialog] Generazione completata. Immagine salvata in:", image_path)
         self.correct_notes = correct_notes
         pixmap = QPixmap(image_path)
-        target_size = QSize(800, 400)
+        target_size = QSize(500, 350)
         self.score_label.setPixmap(
             pixmap.scaled(target_size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         )
         self.generate_button.setEnabled(True)
+        # Imposta il focus sul primo input dopo la generazione
+        if self.note_edits:
+            self.note_edits[0].setFocus()
 
     def on_generation_error(self, error_msg):
         print("[Dialog] Errore nella generazione:", error_msg)
