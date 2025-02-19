@@ -1,0 +1,4 @@
+<!-- Tasto Nero -->
+<svg width="30" height="100" xmlns="http://www.w3.org/2000/svg">
+    <rect x="1" y="1" width="28" height="98" fill="black" stroke="black" stroke-width="2"/>
+</svg>
