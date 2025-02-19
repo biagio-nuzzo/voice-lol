@@ -14,13 +14,14 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QPixmap, QRegExpValidator
 from PyQt5.QtCore import Qt, QSize, QThread, pyqtSignal, QObject, QRegExp, QTimer
+from PyQt5.QtSvg import QSvgWidget
 import os
 import subprocess
 import random
 
 note_range = 8
 
-# Percorsi delle immagini dei tasti del pianoforte
+# Percorsi delle immagini dei tasti del pianoforte (asset SVG)
 script_dir = os.path.dirname(os.path.abspath(__file__))
 assets_dir = os.path.join(script_dir, "assets")
 WHITE_KEY = os.path.join(assets_dir, "white_key.svg")
@@ -28,11 +29,107 @@ WHITE_KEY_PRESSED = os.path.join(assets_dir, "white_key_pressed.svg")
 BLACK_KEY = os.path.join(assets_dir, "black_key.svg")
 BLACK_KEY_PRESSED = os.path.join(assets_dir, "black_key_pressed.svg")
 
-note_range = 8
-
-# Costanti per lo stile dei tasti del pianoforte
+# Costanti per lo stile dei tasti in modalità "computer" (non usati per il pianoforte grafico)
 DEFAULT_KEY_STYLE = "border: 1px solid #444; background-color: #808080;"
 PRESSED_KEY_STYLE = "border: 1px solid #444; background-color: #A0A0A0;"
+
+# ------------------------------------------------------------------------------
+# Widget PianoWidget: compone il pianoforte assemblando gli asset SVG
+# ------------------------------------------------------------------------------
+
+
+class PianoWidget(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        # Dimensioni dei tasti (in pixel)
+        self.white_key_width = 40
+        self.white_key_height = 150
+        self.black_key_width = 24
+        self.black_key_height = 90
+        # Una ottava da LA a LA: 8 tasti bianchi
+        self.octave_white_keys = 8
+
+        # Imposta la dimensione fissa del widget
+        self.setFixedSize(
+            self.white_key_width * self.octave_white_keys, self.white_key_height
+        )
+
+        # Mappatura dei tasti bianchi (da LA a LA)
+        # La disposizione sarà: "a" -> La, "s" -> Si, "d" -> Do, "f" -> Re, "g" -> Mi, "h" -> Fa, "j" -> Sol, "k" -> La
+        self.key_mapping = {
+            "a": ("La", "a"),
+            "s": ("Si", "b"),
+            "d": ("Do", "c"),
+            "f": ("Re", "d"),
+            "g": ("Mi", "e"),
+            "h": ("Fa", "f"),
+            "j": ("Sol", "g"),
+            "k": ("La", "a"),
+        }
+
+        # Mappatura dei tasti neri
+        # Associa i tasti fisici: w = La diesis, r = Do diesis, t = Re diesis, u = Fa diesis, i = Sol diesis
+        self.black_key_mapping = {
+            "w": ("La diesis", "a#"),
+            "r": ("Do diesis", "c#"),
+            "t": ("Re diesis", "d#"),
+            "u": ("Fa diesis", "f#"),
+            "i": ("Sol diesis", "g#"),
+        }
+
+        # Creazione dei tasti bianchi
+        self.white_keys = {}
+        physical_keys = ["a", "s", "d", "f", "g", "h", "j", "k"]
+        for i, key in enumerate(physical_keys):
+            white_key = QSvgWidget(WHITE_KEY, self)
+            white_key.setGeometry(
+                i * self.white_key_width, 0, self.white_key_width, self.white_key_height
+            )
+            self.white_keys[key] = white_key
+
+        # Creazione dei tasti neri.
+        # In un'ottava da LA a LA, i tasti neri sono:
+        # - tra LA e SI: A#
+        # - tra DO e RE: C#
+        # - tra RE e MI: D#
+        # - tra FA e SOL: F#
+        # - tra SOL e LA: G#
+        self.black_keys = {}
+        black_key_positions = {
+            "a#": 0,  # tra il tasto 0 (La) e il tasto 1 (Si)
+            "c#": 2,  # tra il tasto 2 (Do) e il tasto 3 (Re)
+            "d#": 3,  # tra il tasto 3 (Re) e il tasto 4 (Mi)
+            "f#": 5,  # tra il tasto 5 (Fa) e il tasto 6 (Sol)
+            "g#": 6,  # tra il tasto 6 (Sol) e il tasto 7 (La)
+        }
+        for note, white_index in black_key_positions.items():
+            x = (white_index + 1) * self.white_key_width - self.black_key_width // 2
+            black_key = QSvgWidget(BLACK_KEY, self)
+            black_key.setGeometry(x, 0, self.black_key_width, self.black_key_height)
+            self.black_keys[note] = black_key
+
+    def illuminate_key(self, physical_key):
+        """
+        Illumina il tasto bianco corrispondente simulando la pressione:
+        passa dalla versione normale a quella "premuta" per 200ms.
+        """
+        if physical_key in self.white_keys:
+            key_widget = self.white_keys[physical_key]
+            key_widget.load(WHITE_KEY_PRESSED)
+            QTimer.singleShot(200, lambda: key_widget.load(WHITE_KEY))
+
+    def illuminate_black_key(self, black_key):
+        """
+        Illumina il tasto nero corrispondente simulando la pressione:
+        passa dalla versione normale a quella "premuta" per 200ms.
+        """
+        if black_key in self.black_keys:
+            key_widget = self.black_keys[black_key]
+            key_widget.load(BLACK_KEY_PRESSED)
+            QTimer.singleShot(200, lambda: key_widget.load(BLACK_KEY))
+
+
+# ------------------------------------------------------------------------------
 
 
 # Worker che genera lo spartito usando LilyPond
@@ -126,12 +223,12 @@ class GenerateScoreDialog(QDialog):
         grid_layout = QGridLayout()
         grid_layout.setSpacing(5)
         self.note_edits = []
-        validator = QRegExpValidator(QRegExp("^[a-gA-G]$"))
+        validator = QRegExpValidator(QRegExp("^[a-gA-G#]$"))
         for i in range(note_range):
             label = QLabel(f"Nota {i+1}")
             label.setAlignment(Qt.AlignCenter)
             line_edit = QLineEdit()
-            line_edit.setMaxLength(1)
+            line_edit.setMaxLength(2)
             line_edit.setFixedWidth(50)
             line_edit.setValidator(validator)
             line_edit.textChanged.connect(
@@ -176,37 +273,10 @@ class GenerateScoreDialog(QDialog):
         self.radio_computer.toggled.connect(self.update_input_mode)
         self.radio_piano.toggled.connect(self.update_input_mode)
 
-        # Layout per i tasti del pianoforte (visibile solo in modalità pianoforte)
-        self.piano_keys_widget = QWidget()
-        piano_layout = QHBoxLayout(self.piano_keys_widget)
-        piano_layout.setSpacing(5)
-        # Mapping: per ogni tasto (chiave fisica) definiamo (nome nota, nota lettera da inserire)
-        self.piano_mapping = {
-            "a": ("La", "a"),
-            "s": ("Si", "b"),
-            "d": ("Do", "c"),
-            "f": ("Re", "d"),
-            "g": ("Mi", "e"),
-            "h": ("Fa", "f"),
-            "j": ("Sol", "g"),
-            "k": ("La", "a"),
-        }
-        # Creiamo i "tasti" come QLabel e li memorizziamo in un dizionario
-        self.piano_keys_dict = {}
-        for key in ["a", "s", "d", "f", "g", "h", "j", "k"]:
-            note_name, key_letter = self.piano_mapping[key]
-            label = QLabel(
-                f"<div align='center'><span style='font-size:12pt;'>{note_name}</span><br>"
-                f"<span style='font-size:8pt;'>{key.upper()}</span></div>"
-            )
-            label.setFixedSize(40, 40)
-            label.setAlignment(Qt.AlignCenter)
-            label.setStyleSheet(DEFAULT_KEY_STYLE)
-            # Rendi il widget non interattivo col mouse
-            label.setAttribute(Qt.WA_TransparentForMouseEvents)
-            piano_layout.addWidget(label)
-            self.piano_keys_dict[key] = label
-        main_layout.addWidget(self.piano_keys_widget)
+        # Layout per il pianoforte grafico (visibile solo in modalità pianoforte)
+        # Il widget viene centrato nell'interfaccia
+        self.piano_keys_widget = PianoWidget()
+        main_layout.addWidget(self.piano_keys_widget, alignment=Qt.AlignCenter)
         self.update_input_mode()  # Stato iniziale
 
         # Frame per visualizzare lo spartito generato
@@ -257,28 +327,45 @@ class GenerateScoreDialog(QDialog):
         """
         if self.radio_piano.isChecked():
             return
-        if len(text) == 1:
+        if len(text) > 0:
             if index < len(self.note_edits) - 1:
                 self.note_edits[index + 1].setFocus()
             else:
                 self.on_send_clicked()
 
     def illuminate_key(self, key):
-        """Illumina il tasto relativo per 200ms usando lo stile definito."""
-        if key in self.piano_keys_dict:
-            label = self.piano_keys_dict[key]
-            label.setStyleSheet(PRESSED_KEY_STYLE)
-            QTimer.singleShot(200, lambda: label.setStyleSheet(DEFAULT_KEY_STYLE))
+        """Illumina il tasto bianco delegando al PianoWidget."""
+        self.piano_keys_widget.illuminate_key(key)
+
+    def illuminate_black_key(self, black_key):
+        """Illumina il tasto nero delegando al PianoWidget."""
+        self.piano_keys_widget.illuminate_black_key(black_key)
 
     def handle_piano_key(self, key):
         """
-        Gestisce la pressione di un tasto (fisico) in modalità pianoforte:
+        Gestisce la pressione di un tasto bianco in modalità pianoforte:
         aggiorna l'input corrente e illumina il tasto.
         """
         if self.current_input_index >= note_range:
             return
-        note_name, note_letter = self.piano_mapping[key]
+        note_name, note_letter = self.piano_keys_widget.key_mapping[key]
         self.illuminate_key(key)
+        self.note_edits[self.current_input_index].setText(note_letter.lower())
+        if self.current_input_index < len(self.note_edits) - 1:
+            self.current_input_index += 1
+            self.note_edits[self.current_input_index].setFocus()
+        else:
+            self.on_send_clicked()
+
+    def handle_black_key(self, key):
+        """
+        Gestisce la pressione di un tasto nero in modalità pianoforte:
+        aggiorna l'input corrente e illumina il tasto.
+        """
+        if self.current_input_index >= note_range:
+            return
+        note_name, note_letter = self.piano_keys_widget.black_key_mapping[key]
+        self.illuminate_black_key(note_letter)
         self.note_edits[self.current_input_index].setText(note_letter.lower())
         if self.current_input_index < len(self.note_edits) - 1:
             self.current_input_index += 1
@@ -289,12 +376,17 @@ class GenerateScoreDialog(QDialog):
     def keyPressEvent(self, event):
         """
         Se siamo in modalità pianoforte, intercettiamo le pressioni dei tasti fisici
-        (a, s, d, f, g, h, j, k) per inserire la nota corrispondente.
+        per inserire la nota corrispondente:
+          - i tasti bianchi (a, s, d, f, g, h, j, k)
+          - i tasti neri (w, r, t, u, i)
         """
         if self.radio_piano.isChecked():
             key = event.text().lower()
-            if key in self.piano_mapping:
+            if key in self.piano_keys_widget.key_mapping:
                 self.handle_piano_key(key)
+                return
+            elif key in self.piano_keys_widget.black_key_mapping:
+                self.handle_black_key(key)
                 return
         super().keyPressEvent(event)
 
