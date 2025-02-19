@@ -45,6 +45,10 @@ class GetAction:
         """
         Identifica l'azione richiesta dall'utente invocando il modello LLM.
         """
+
+        if not user_input:
+            return None
+
         prompt = self.generate_prompt(user_input)
         payload = {
             "model": GEMMA,
