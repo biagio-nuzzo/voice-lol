@@ -78,13 +78,14 @@ class EmailsToTextAction:
         }
 
 
-GET_UNREAD_EMAIL_LIST = Action(
-    name="GET_UNREAD_EMAIL_LIST",
+EMAIL_NON_LETTE = Action(
+    name="EMAIL_NON_LETTE",
     description="""
     Ottiene le email non lette dalla inbox di Gmail e le restituisce in una lista di dizionari, 
     includendo mittente, oggetto e corpo. Le email rimangono non lette.
     L'utente può richiedere di attivare questa funzione dicendo:
     "Mostrami le email non lette" oppure "Mostrami le email non lette da Gmail".
+    "Verifica se ci sono email da leggere",
     "Controlla se ci sono email non lette".
     """,
     verbose_name="Email Non Lettere",

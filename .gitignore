@@ -5,6 +5,8 @@ __pycache__/
 *.pyd
 
 .env
+tmp/
+app/actions/custom/generate_score/tmp
 
 # Virtual environments
 venv/

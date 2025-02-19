@@ -4,6 +4,6 @@
                 \clef treble
                 \key c \major
                 \time 4/4
-                d4 b4 b4 e4 b4 a4 e4 g4
+                e4 gis4 g4 c4 dis4 g4 e4 ais4
                 }
                 

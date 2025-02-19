@@ -15,10 +15,10 @@ from app.actions.core.show_output import SHOW_OUTPUT
 from app.actions.core.start_agent_manual import START_AGENT_MANUAL
 
 # Actions Custom
-from app.actions.custom.send_email_manual import SEND_EMAIL_MANUAL
-from app.actions.custom.get_unread_emails import GET_UNREAD_EMAIL_LIST
+from app.actions.custom.send_email_manual import INVIA_EMAIL_MANUALE
+from app.actions.custom.get_unread_emails import EMAIL_NON_LETTE
 from app.actions.custom.get_list_of_actions import GET_LIST_OF_ACTIONS
-from app.actions.custom.generate_score.generate_score import GENERATE_SCORE
+from app.actions.custom.generate_score.generate_score import LETTURA_NOTE_MUSICALI
 
 
 # Dizionario che mappa tutte le Action disponibili
@@ -37,8 +37,8 @@ ACTION_REGISTRY = {
     "START_AGENT": START_AGENT,
     "START_AGENT_MANUAL": START_AGENT_MANUAL,
     # Custom
-    "SEND_EMAIL_MANUAL": SEND_EMAIL_MANUAL,
-    "GET_UNREAD_EMAIL_LIST": GET_UNREAD_EMAIL_LIST,
+    "INVIA_EMAIL_MANUALE": INVIA_EMAIL_MANUALE,
+    "EMAIL_NON_LETTE": EMAIL_NON_LETTE,
     "GET_LIST_OF_ACTIONS": GET_LIST_OF_ACTIONS,
-    "GENERATE_SCORE": GENERATE_SCORE,
+    "LETTURA_NOTE_MUSICALI": LETTURA_NOTE_MUSICALI,
 }

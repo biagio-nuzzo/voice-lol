@@ -32,8 +32,8 @@ class SendInput:
         }
 
 
-SEND_EMAIL_MANUAL = Action(
-    name="SEND_EMAIL_MANUAL",
+INVIA_EMAIL_MANUALE = Action(
+    name="INVIA_EMAIL_MANUALE",
     description="""Invia un'email utilizzando il server SMTP di Gmail.
     L'utente può richiedere l'avvio di questa action dicendo "Invia email" e seguendo le istruzioni,
     oppure direttamente "Invia email a [email] con oggetto [oggetto] e corpo [corpo]".

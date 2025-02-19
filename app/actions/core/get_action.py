@@ -26,8 +26,10 @@ class GetAction:
                 for action in actions
             ]
         )
+
         prompt = f"""
             Sei un assistente AI che classifica le richieste degli utenti in base al contesto.
+            Basandoti sull'input dell'utente e sulle descrizioni delle azioni, devi identificare quale azione è richiesta.
             Il tuo compito è identificare quale tra le seguenti azioni è richiesta dall'utente:
 
             {actions_list}
@@ -39,6 +41,7 @@ class GetAction:
 
             Input dell'utente: "{user_input}"
         """
+
         return prompt
 
     def execute(self, user_input: str) -> str:
