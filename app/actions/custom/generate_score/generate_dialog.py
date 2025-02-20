@@ -103,17 +103,23 @@ class GenerateScoreDialog(QDialog):
 
     def init_ui(self):
         print("[Dialog] Costruzione dell'interfaccia...")
-        # Layout principale: due colonne affiancate
+        # Layout principale: due colonne (30% sinistra, 70% destra)
         main_layout = QHBoxLayout(self)
         main_layout.setSpacing(10)
         main_layout.setContentsMargins(10, 10, 10, 10)
 
-        # ---------------- Colonna sinistra: Settaggi ----------------
+        # --------- Colonna sinistra: Widget Settings e Widget Training ---------
+        left_widget = QWidget()
+        left_layout = QVBoxLayout(left_widget)
+        left_layout.setSpacing(10)
+        left_layout.setContentsMargins(0, 0, 0, 0)
+
+        # ----- Widget Settings -----
         settings_widget = QWidget()
         settings_layout = QVBoxLayout(settings_widget)
         settings_layout.setSpacing(10)
-
-        # Modalità di input (colonna)
+        # (Qui inserisci il codice per impostare il widget settings, come nel codice precedente)
+        # Ad esempio:
         input_mode_label = QLabel("Modalità di input:")
         self.radio_computer = QRadioButton("Tastiera del computer")
         self.radio_piano = QRadioButton("Pianoforte")
@@ -122,7 +128,6 @@ class GenerateScoreDialog(QDialog):
         mode_layout.addWidget(input_mode_label)
         mode_layout.addWidget(self.radio_computer)
         mode_layout.addWidget(self.radio_piano)
-        # Raggruppamento
         self.input_mode_group = QButtonGroup(self)
         self.input_mode_group.addButton(self.radio_computer)
         self.input_mode_group.addButton(self.radio_piano)
@@ -151,14 +156,22 @@ class GenerateScoreDialog(QDialog):
         self.radio_computer.toggled.connect(self.update_input_mode)
         self.radio_piano.toggled.connect(self.update_input_mode)
 
-        # Aggiungiamo la colonna dei settaggi alla sinistra
-        main_layout.addWidget(settings_widget)
+        left_layout.addWidget(settings_widget, alignment=Qt.AlignTop)
 
-        # ---------------- Colonna destra: Esercizio ----------------
-        exercise_widget = QWidget()
-        exercise_layout = QVBoxLayout(exercise_widget)
-        exercise_layout.setSpacing(10)
+        # ----- Widget Training (già definito) -----
+        self.training_widget = TrainingWidget()
+        left_layout.addWidget(self.training_widget, alignment=Qt.AlignTop)
 
+        # --------- Colonna destra: Input Notes e Display Score ---------
+        right_widget = QWidget()
+        right_layout = QVBoxLayout(right_widget)
+        right_layout.setSpacing(10)
+        right_layout.setContentsMargins(0, 0, 0, 0)
+
+        # ----- Riga 1: Input Notes -----
+        input_notes_widget = QWidget()
+        input_notes_layout = QVBoxLayout(input_notes_widget)
+        input_notes_layout.setSpacing(5)
         # Griglia per gli input delle note
         grid_layout = QGridLayout()
         grid_layout.setSpacing(5)
@@ -179,16 +192,18 @@ class GenerateScoreDialog(QDialog):
             grid_layout.addWidget(label, 0, i)
             grid_layout.addWidget(line_edit, 1, i)
             self.note_edits.append(line_edit)
-        exercise_layout.addLayout(grid_layout)
+        input_notes_layout.addLayout(grid_layout)
 
-        # Pianoforte grafico
+        # (Opzionale) Pianoforte grafico: se in modalità pianoforte lo mostriamo
         self.piano_keys_widget = PianoWidget()
-        exercise_layout.addWidget(self.piano_keys_widget, alignment=Qt.AlignCenter)
+        input_notes_layout.addWidget(self.piano_keys_widget, alignment=Qt.AlignCenter)
 
-        # Training widget
-        self.training_widget = TrainingWidget()
-        exercise_layout.addWidget(self.training_widget)
+        right_layout.addWidget(input_notes_widget)
 
+        # ----- Riga 2: Display Score -----
+        display_score_widget = QWidget()
+        display_score_layout = QVBoxLayout(display_score_widget)
+        display_score_layout.setSpacing(5)
         # Frame per lo spartito
         self.score_frame = QFrame()
         self.score_frame.setFrameShape(QFrame.Box)
@@ -197,12 +212,12 @@ class GenerateScoreDialog(QDialog):
         self.score_label.setAlignment(Qt.AlignCenter)
         self.score_label.setMinimumSize(500, 350)
         score_layout.addWidget(self.score_label)
-        exercise_layout.addWidget(self.score_frame)
+        display_score_layout.addWidget(self.score_frame)
 
         # Risultato dell'esercizio corrente
         self.score_result_label = QLabel("")
         self.score_result_label.setAlignment(Qt.AlignCenter)
-        exercise_layout.addWidget(self.score_result_label)
+        display_score_layout.addWidget(self.score_result_label)
 
         # Pulsanti: Genera Spartito, Invia Note e Reset Form
         button_layout = QHBoxLayout()
@@ -212,10 +227,13 @@ class GenerateScoreDialog(QDialog):
         button_layout.addWidget(self.generate_button)
         button_layout.addWidget(self.send_button)
         button_layout.addWidget(self.reset_button)
-        exercise_layout.addLayout(button_layout)
+        display_score_layout.addLayout(button_layout)
 
-        # Aggiungiamo la colonna dell'esercizio alla destra
-        main_layout.addWidget(exercise_widget)
+        right_layout.addWidget(display_score_widget)
+
+        # Aggiungiamo le due colonne al layout principale con stretch (3:7)
+        main_layout.addWidget(left_widget, 3)
+        main_layout.addWidget(right_widget, 7)
 
         # Collega i pulsanti
         self.generate_button.clicked.connect(self.on_generate_clicked)
