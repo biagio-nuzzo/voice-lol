@@ -88,7 +88,7 @@ class TrainingWidget(QWidget):
         self.stats_label.setText(f"Esercizi: {count} | Media: {average:.2f}")
 
 
-# ---------------- GenerateScoreDialog (UI principale) ----------------
+# ------------- GenerateScoreDialog (UI principale) -------------
 class GenerateScoreDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -96,18 +96,70 @@ class GenerateScoreDialog(QDialog):
         self.setWindowTitle("Genera Spartito")
         self.thread = None
         self.worker = None
-        self.correct_notes = None
-        self.current_input_index = 0
+        self.correct_notes = None  # Note corrette generate dal worker
+        self.current_input_index = 0  # Indice dell'input attivo (modalità pianoforte)
         self.init_ui()
         self.adjustSize()
 
     def init_ui(self):
         print("[Dialog] Costruzione dell'interfaccia...")
-        main_layout = QVBoxLayout(self)
+        # Layout principale: due colonne affiancate
+        main_layout = QHBoxLayout(self)
         main_layout.setSpacing(10)
         main_layout.setContentsMargins(10, 10, 10, 10)
 
-        # 1. Prima riga: Input delle note (griglia)
+        # ---------------- Colonna sinistra: Settaggi ----------------
+        settings_widget = QWidget()
+        settings_layout = QVBoxLayout(settings_widget)
+        settings_layout.setSpacing(10)
+
+        # Modalità di input (colonna)
+        input_mode_label = QLabel("Modalità di input:")
+        self.radio_computer = QRadioButton("Tastiera del computer")
+        self.radio_piano = QRadioButton("Pianoforte")
+        self.radio_computer.setChecked(True)
+        mode_layout = QVBoxLayout()
+        mode_layout.addWidget(input_mode_label)
+        mode_layout.addWidget(self.radio_computer)
+        mode_layout.addWidget(self.radio_piano)
+        # Raggruppamento
+        self.input_mode_group = QButtonGroup(self)
+        self.input_mode_group.addButton(self.radio_computer)
+        self.input_mode_group.addButton(self.radio_piano)
+        settings_layout.addLayout(mode_layout)
+
+        # Selezione chiave
+        clef_label = QLabel("Seleziona chiave:")
+        self.radio_treble = QRadioButton("Violino")
+        self.radio_bass = QRadioButton("Basso")
+        self.radio_treble.setChecked(True)
+        clef_layout = QVBoxLayout()
+        clef_layout.addWidget(clef_label)
+        clef_layout.addWidget(self.radio_treble)
+        clef_layout.addWidget(self.radio_bass)
+        self.clef_group = QButtonGroup(self)
+        self.clef_group.addButton(self.radio_treble)
+        self.clef_group.addButton(self.radio_bass)
+        settings_layout.addLayout(clef_layout)
+
+        # Abilita diesis
+        self.sharps_checkbox = QCheckBox("Abilita diesis")
+        self.sharps_checkbox.setChecked(False)
+        settings_layout.addWidget(self.sharps_checkbox)
+
+        # Collega aggiornamento modalità
+        self.radio_computer.toggled.connect(self.update_input_mode)
+        self.radio_piano.toggled.connect(self.update_input_mode)
+
+        # Aggiungiamo la colonna dei settaggi alla sinistra
+        main_layout.addWidget(settings_widget)
+
+        # ---------------- Colonna destra: Esercizio ----------------
+        exercise_widget = QWidget()
+        exercise_layout = QVBoxLayout(exercise_widget)
+        exercise_layout.setSpacing(10)
+
+        # Griglia per gli input delle note
         grid_layout = QGridLayout()
         grid_layout.setSpacing(5)
         self.note_edits = []
@@ -127,51 +179,17 @@ class GenerateScoreDialog(QDialog):
             grid_layout.addWidget(label, 0, i)
             grid_layout.addWidget(line_edit, 1, i)
             self.note_edits.append(line_edit)
-        main_layout.addLayout(grid_layout)
+        exercise_layout.addLayout(grid_layout)
 
-        # 2. Seconda riga: Due colonne per settaggi e training
-        second_row = QHBoxLayout()
-        # Colonna sinistra: Settaggi del generatore
-        settings_widget = QWidget()
-        settings_layout = QVBoxLayout(settings_widget)
-        settings_layout.setSpacing(10)
-        # Modalità di input
-        mode_label = QLabel("Modalità di input:")
-        self.radio_computer = QRadioButton("Tastiera del computer")
-        self.radio_piano = QRadioButton("Pianoforte")
-        self.radio_computer.setChecked(True)
-        settings_layout.addWidget(mode_label)
-        settings_layout.addWidget(self.radio_computer)
-        settings_layout.addWidget(self.radio_piano)
-        self.input_mode_group = QButtonGroup(self)
-        self.input_mode_group.addButton(self.radio_computer)
-        self.input_mode_group.addButton(self.radio_piano)
-        # Selezione chiave
-        clef_label = QLabel("Seleziona chiave:")
-        self.radio_treble = QRadioButton("Violino")
-        self.radio_bass = QRadioButton("Basso")
-        self.radio_treble.setChecked(True)
-        settings_layout.addWidget(clef_label)
-        settings_layout.addWidget(self.radio_treble)
-        settings_layout.addWidget(self.radio_bass)
-        self.clef_group = QButtonGroup(self)
-        self.clef_group.addButton(self.radio_treble)
-        self.clef_group.addButton(self.radio_bass)
-        # Abilita diesis
-        self.sharps_checkbox = QCheckBox("Abilita diesis")
-        self.sharps_checkbox.setChecked(False)
-        settings_layout.addWidget(self.sharps_checkbox)
-        # Collega il cambio di modalità
-        self.radio_computer.toggled.connect(self.update_input_mode)
-        self.radio_piano.toggled.connect(self.update_input_mode)
-        # Colonna destra: Widget di allenamento
+        # Pianoforte grafico
+        self.piano_keys_widget = PianoWidget()
+        exercise_layout.addWidget(self.piano_keys_widget, alignment=Qt.AlignCenter)
+
+        # Training widget
         self.training_widget = TrainingWidget()
-        # Aggiungiamo le due colonne nella seconda riga
-        second_row.addWidget(settings_widget)
-        second_row.addWidget(self.training_widget)
-        main_layout.addLayout(second_row)
+        exercise_layout.addWidget(self.training_widget)
 
-        # 3. Terza riga: Riquadro dello spartito
+        # Frame per lo spartito
         self.score_frame = QFrame()
         self.score_frame.setFrameShape(QFrame.Box)
         score_layout = QVBoxLayout(self.score_frame)
@@ -179,14 +197,14 @@ class GenerateScoreDialog(QDialog):
         self.score_label.setAlignment(Qt.AlignCenter)
         self.score_label.setMinimumSize(500, 350)
         score_layout.addWidget(self.score_label)
-        main_layout.addWidget(self.score_frame)
+        exercise_layout.addWidget(self.score_frame)
 
-        # 4. Quarta riga: Punteggio dello spartito
+        # Risultato dell'esercizio corrente
         self.score_result_label = QLabel("")
         self.score_result_label.setAlignment(Qt.AlignCenter)
-        main_layout.addWidget(self.score_result_label)
+        exercise_layout.addWidget(self.score_result_label)
 
-        # 5. Quinta riga: Pulsanti
+        # Pulsanti: Genera Spartito, Invia Note e Reset Form
         button_layout = QHBoxLayout()
         self.generate_button = QPushButton("Genera Spartito")
         self.send_button = QPushButton("Invia Note")
@@ -194,17 +212,22 @@ class GenerateScoreDialog(QDialog):
         button_layout.addWidget(self.generate_button)
         button_layout.addWidget(self.send_button)
         button_layout.addWidget(self.reset_button)
-        main_layout.addLayout(button_layout)
+        exercise_layout.addLayout(button_layout)
 
-        # Colleghiamo i pulsanti
+        # Aggiungiamo la colonna dell'esercizio alla destra
+        main_layout.addWidget(exercise_widget)
+
+        # Collega i pulsanti
         self.generate_button.clicked.connect(self.on_generate_clicked)
         self.send_button.clicked.connect(self.on_send_clicked)
         self.reset_button.clicked.connect(self.on_reset_clicked)
 
+        # Modalità di input: gli input rimangono editabili
+        self.update_input_mode()
         print("[Dialog] Interfaccia costruita con successo.")
 
     def keyPressEvent(self, event):
-        # Il pulsante "Invia Note" viene attivato quando si preme Enter/Return
+        # Se l'utente preme Enter in qualunque parte, simula "Invia Note"
         if event.key() in (Qt.Key_Return, Qt.Key_Enter):
             self.on_send_clicked()
             return
@@ -361,7 +384,7 @@ class GenerateScoreDialog(QDialog):
             else:
                 self.note_edits[i].setStyleSheet("background-color: red;")
         self.score_result_label.setText(f"{correct_count}/{note_range}")
-        # Se la sessione di allenamento è attiva, aggiorna le statistiche
+        # Se la sessione di allenamento è attiva, aggiungiamo il punteggio
         if self.training_widget.session_running:
             self.training_widget.add_score(correct_count)
 
