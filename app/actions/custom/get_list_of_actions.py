@@ -13,6 +13,7 @@ class GetListOfActions:
         from fastchain.manager import FastChainManager
 
         actions = FastChainManager.get_available_actions()
+
         # Per ogni action, creiamo una stringa formattata con indice, nome, descrizione e verbose_name.
         formatted_actions = "\n\n".join(
             [

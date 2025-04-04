@@ -32,7 +32,6 @@ decorator==5.1.1
 docopt==0.6.2
 einops==0.8.1
 encodec==0.1.1
--e git+https://github.com/biagio-nuzzo/voice-lol.git@c357db71b8aaa716aa16d7484789714ea3d293be#egg=fastchain
 filelock==3.17.0
 Flask==3.1.0
 fonttools==4.56.0

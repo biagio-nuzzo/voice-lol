@@ -19,6 +19,7 @@ from app.actions.custom.send_email_manual import INVIA_EMAIL_MANUALE
 from app.actions.custom.get_unread_emails import EMAIL_NON_LETTE
 from app.actions.custom.get_list_of_actions import GET_LIST_OF_ACTIONS
 from app.actions.custom.generate_score.generate_score import LETTURA_NOTE_MUSICALI
+from app.actions.custom.latinus_grader.get_knowledge_evaluation import GET_KNOWLEDGE_EVALUATION
 
 
 # Dizionario che mappa tutte le Action disponibili
@@ -41,4 +42,5 @@ ACTION_REGISTRY = {
     "EMAIL_NON_LETTE": EMAIL_NON_LETTE,
     "GET_LIST_OF_ACTIONS": GET_LIST_OF_ACTIONS,
     "LETTURA_NOTE_MUSICALI": LETTURA_NOTE_MUSICALI,
+    "GET_KNOWLEDGE_EVALUATION": GET_KNOWLEDGE_EVALUATION,
 }
