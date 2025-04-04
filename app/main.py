@@ -14,6 +14,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 def main():
     """Avvia l'applicazione FastChain - Voice Agent"""
+    print("Ciao")
     app = QApplication(sys.argv)
     window = MainUI()
     window.show()
